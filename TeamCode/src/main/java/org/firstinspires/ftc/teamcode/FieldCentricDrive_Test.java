@@ -39,7 +39,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 //this code doesn't really include PedroPathing at the moment
 @TeleOp(name = "FieldCentricDriveTEST", group = "Robot")
-@Disabled
 public class FieldCentricDrive_Test extends OpMode {
     DcMotor frontLeftDrive;
     DcMotor frontRightDrive;
