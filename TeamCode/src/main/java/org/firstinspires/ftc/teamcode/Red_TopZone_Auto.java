@@ -8,6 +8,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,11 +20,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 public class Red_TopZone_Auto extends OpMode {
 
     public Follower follower1;
-    public DcMotor shooterMotorL;
-    public DcMotor shooterMotorR;
-    public DcMotor intakeMotor;
-    public Servo intakeServo;
+    public DcMotor shooter;
     private int pathState;
+    private Limelight3A limelight;
     private final Pose startPose = new Pose(102, 121.2, Math.toRadians(270));
     private final Pose shootingPose = new Pose(60,72, Math.toRadians(225));
     private final Pose endPose = new Pose(70,50, Math.toRadians(225));
@@ -35,17 +34,12 @@ public class Red_TopZone_Auto extends OpMode {
         follower1.setStartingPose(startPose);
         follower1.setMaxPower(0.5);
 
-        shooterMotorL = hardwareMap.get(DcMotor.class, "shooterMotorL");
-        shooterMotorR = hardwareMap.get(DcMotor.class, "shooterMotorR");
-        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
-        intakeServo = hardwareMap.get(Servo.class, "intakeServo");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
-        shooterMotorR.setDirection(FORWARD);
-        shooterMotorL.setDirection(REVERSE);
-        intakeMotor.setDirection(REVERSE);
-        intakeServo.setDirection(Servo.Direction.REVERSE);
+        telemetry.setMsTransmissionInterval(11);
 
-        intakeServo.setPosition(0);
+        limelight.pipelineSwitch(0);
+
 
         firstPath = follower1.pathBuilder()
                 .addPath(new BezierLine(startPose, shootingPose))
@@ -62,7 +56,7 @@ public class Red_TopZone_Auto extends OpMode {
 
     @Override
     public void start() {
-
+        limelight.start();
     }
 
     @Override
@@ -77,7 +71,7 @@ public class Red_TopZone_Auto extends OpMode {
                 break;
             case 1:
                 if (!follower1.isBusy()) {
-                    intakeServo.setPosition(0);
+
                     pathState = 2;
                 }
                 break;
@@ -91,16 +85,13 @@ public class Red_TopZone_Auto extends OpMode {
     }
 
     public Runnable shooterOn() {
-        shooterMotorL.setPower(0.55);
-        shooterMotorR.setPower(0.55);
+        shooter.setPower(0.45);
         return null;
     }
 
     public Runnable intakeOn() {
         follower1.pausePathFollowing();
-        intakeServo.setPosition(0.5);
         sleep(2000);
-        intakeServo.setPosition(0.8);
         follower1.resumePathFollowing();
         return null;
     }
@@ -113,9 +104,7 @@ public class Red_TopZone_Auto extends OpMode {
     }
 
     public Runnable intakeShooterOff() {
-        shooterMotorR.setPower(0);
-        shooterMotorL.setPower(0);
-        intakeServo.setPosition(0);
+        shooter.setPower(0);
         return null;
     }
 }

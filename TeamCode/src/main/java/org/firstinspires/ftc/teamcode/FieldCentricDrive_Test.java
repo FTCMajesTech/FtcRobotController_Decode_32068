@@ -40,24 +40,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 //this code doesn't really include PedroPathing at the moment
 @TeleOp(name = "FieldCentricDriveTEST", group = "Robot")
 public class FieldCentricDrive_Test extends OpMode {
-    DcMotor frontLeftDrive;
-    DcMotor frontRightDrive;
-    DcMotor backLeftDrive;
-    DcMotor backRightDrive;
+    DcMotor FrontLeftDrive;
+    DcMotor FrontRightDrive;
+    DcMotor BackLeftDrive;
+    DcMotor BackRightDrive;
 
     // IMU
     IMU imu;
 
     @Override
     public void init() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_drive");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_drive");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_drive");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
+        FrontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftDrive");
+        FrontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightDrive");
+        BackLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftDrive");
+        BackRightDrive = hardwareMap.get(DcMotor.class, "BackRightDrive");
 
 
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        BackLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        FrontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
         imu = hardwareMap.get(IMU.class, "imu");
         // needs to be changed!!!!
@@ -126,9 +126,9 @@ public class FieldCentricDrive_Test extends OpMode {
         maxPower = Math.max(maxPower, Math.abs(backLeftPower));
 
         //multiply by maxSpeed so that it can be set lower for outreaches
-        frontLeftDrive.setPower(maxSpeed * (frontLeftPower / maxPower));
-        frontRightDrive.setPower(maxSpeed * (frontRightPower / maxPower));
-        backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
-        backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
+        FrontLeftDrive.setPower(maxSpeed * (frontLeftPower / maxPower));
+        FrontRightDrive.setPower(maxSpeed * (frontRightPower / maxPower));
+        BackLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
+        BackRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
     }
 }

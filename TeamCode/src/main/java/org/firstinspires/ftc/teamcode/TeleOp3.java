@@ -3,26 +3,21 @@ package org.firstinspires.ftc.teamcode;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp2", group="Robot")
-public class TeleOp2 extends OpMode {
+public class TeleOp3 extends OpMode {
 private Follower follower;
 private Limelight3A limelight;
 public DcMotor shooter;
 private double power = 0.25;
 
-DcMotor FL;
-DcMotor FR;
-DcMotor BL;
-DcMotor BR;
 
 
 
@@ -41,10 +36,6 @@ DcMotor BR;
 
         limelight.pipelineSwitch(0);
 
-        FL = hardwareMap.get(DcMotor.class, "FrontLeftDrive");
-        FR = hardwareMap.get(DcMotor.class, "FrontRightDrive");
-        BL = hardwareMap.get(DcMotor.class, "BackLeftDrive");
-        BR = hardwareMap.get(DcMotor.class, "BackRightDrive");
     }
 
     @Override
@@ -105,21 +96,19 @@ DcMotor BR;
     }
 
     private void spinRight() {
-        BL.setDirection(DcMotor.Direction.REVERSE);
-        FL.setDirection(DcMotor.Direction.REVERSE);
-        FL.setPower(power); BL.setPower(power); FR.setPower(-power); BR.setPower(-power);
+        // Arguments: (forward, strafe, rotation)
+        // 0 forward, 0 strafe, and positive power for rotation
+        follower.setTeleOpDrive(0, 0, power);
     }
 
     private void spinLeft() {
-        BL.setDirection(DcMotor.Direction.REVERSE);
-        FL.setDirection(DcMotor.Direction.REVERSE);
-        FL.setPower(-power); BL.setPower(-power); FR.setPower(power); BR.setPower(power);
+        // 0 forward, 0 strafe, and negative power for rotation
+        follower.setTeleOpDrive(0, 0, -power);
     }
 
     private void brake() {
-        BL.setDirection(DcMotor.Direction.REVERSE);
-        FL.setDirection(DcMotor.Direction.REVERSE);
-        FL.setPower(0); BL.setPower(0); FR.setPower(0); BR.setPower(0);
+        // Sets all movement vectors to zero
+        follower.setTeleOpDrive(0, 0, 0);
     }
 
 }
