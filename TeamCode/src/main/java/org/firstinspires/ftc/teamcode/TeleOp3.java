@@ -73,7 +73,7 @@ private double power = 0.25;
 
 
         //tries to rotate until Tx is 0 and uses a while loop
-        //can also freeze robot (CHANGE THIS PART OF CODE)
+        //can also freeze robot (CHANGE THIS CODE)
         //while loops can lock robot
         if (gamepad1.b) {
             while (result.getTx() != 0) {
