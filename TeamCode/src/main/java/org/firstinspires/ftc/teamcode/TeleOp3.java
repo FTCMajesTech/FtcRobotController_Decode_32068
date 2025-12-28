@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp2", group="Robot")
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp3", group="Robot")
 public class TeleOp3 extends OpMode {
 private Follower follower;
 private Limelight3A limelight;
@@ -53,6 +53,7 @@ private double power = 0.25;
         //joe builder
         follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
 
+        //VANILLER CHANGE THE COMMENTS TO BE GOOD
         LLResult result = limelight.getLatestResult();
 
         if (gamepad1.dpad_up) {
@@ -91,6 +92,7 @@ private double power = 0.25;
                 telemetry.addData("tx", result.getTx());
                 telemetry.addData("ty", result.getTy());
                 telemetry.addData("Botpose", botpose.toString());
+                telemetry.addData("april tag", result.getFiducialResults());
             }
         }
     }
@@ -98,12 +100,12 @@ private double power = 0.25;
     private void spinRight() {
         // Arguments: (forward, strafe, rotation)
         // 0 forward, 0 strafe, and positive power for rotation
-        follower.setTeleOpDrive(0, 0, power);
+        follower.setTeleOpDrive(0, 0, -power);
     }
 
     private void spinLeft() {
         // 0 forward, 0 strafe, and negative power for rotation
-        follower.setTeleOpDrive(0, 0, -power);
+        follower.setTeleOpDrive(0, 0, power);
     }
 
     private void brake() {
