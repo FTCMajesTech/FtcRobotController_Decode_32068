@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
+import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -16,6 +17,7 @@ public class TeleOp3 extends OpMode {
 private Follower follower;
 private Limelight3A limelight;
 public DcMotor shooter;
+public DcMotor intake;
 private double power = 0.25;
 //how fast robot rotates when auto-aligning
 
@@ -30,6 +32,9 @@ private double power = 0.25;
         //connects shooter and sets direction
         shooter = hardwareMap.get(DcMotor.class, "shooter");
         shooter.setDirection(FORWARD);
+
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake.setDirection(REVERSE);
 
         //connects limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -69,6 +74,13 @@ private double power = 0.25;
         }
         if (gamepad1.dpad_down) {
             shooter.setPower(0);
+        }
+
+        if (gamepad1.y) {
+            intake.setPower(0.75);
+        }
+        if (gamepad1.x) {
+            intake.setPower(0);
         }
 
 
