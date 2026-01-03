@@ -8,22 +8,35 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp3", group="Robot")
-public class TeleOp3 extends OpMode {
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp4", group="Robot")
+public class TeleOp4 extends OpMode {
 private Follower follower;
 private Limelight3A limelight;
-public DcMotor shooter;
+public DcMotorEx shooter;
 public DcMotor intake;
 public Servo servo1;
 public Servo servo2;
 private double power = 0.25;
 //how fast robot rotates when auto-aligning
 
+// ===== SHOOTER SETTINGS =====
+private static final double SHOOTER_FAR_VELOCITY = 2400;    // ticks/sec for far shots
+private static final double SHOOTER_CLOSE_VELOCITY = 1600;  // ticks/sec for close shots
+
+// Clamp values for shooter distance mapping
+private static final double FAR_DISTANCE = 2.5;   // meters
+private static final double CLOSE_DISTANCE = 0.8; // meters
+
+// ===== AUTO-ALIGN SETTINGS =====
+private static final double TX_TOLERANCE = 1.0;   // degrees, how close to target is "aligned"
+private static final double ALIGN_KP = 0.015;     // proportional control factor for turning
+private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during auto-align
 
 
     @Override
@@ -32,12 +45,16 @@ private double power = 0.25;
         follower = Constants.createFollower(hardwareMap);
         follower.update();
 
-        //connects shooter and sets direction
-        shooter = hardwareMap.get(DcMotor.class, "shooter");
+        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(FORWARD);
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(REVERSE);
+
+        servo1 = hardwareMap.get(Servo.class, "servo1");
+        servo2 = hardwareMap.get(Servo.class, "servo2");
 
         //connects limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -74,12 +91,35 @@ private double power = 0.25;
         //gets latest vision result
         LLResult result = limelight.getLatestResult();
 
-        if (gamepad1.dpad_up) {
-            shooter.setPower(0.65);
+        if (gamepad1.dpad_up && result != null && result.isValid()) {
+
+            //shooter stuff
+            Pose3D botpose = result.getBotpose();
+            if (gamepad1.dpad_up && result != null && result.isValid()) {
+                // Use vertical angle Ty to estimate distance to target
+                double ty = result.getTy();
+
+                // Clamp Ty to reasonable values to prevent crazy shooter speeds
+                double clampedTy = Math.max(-20, Math.min(-5, ty));  // adjust -20..-5 based on field/testing
+
+                // Normalize Ty to 0..1 for interpolation
+                double t = (clampedTy + 20) / 15; // -20 -> 0, -5 -> 1
+
+                // Interpolate shooter velocity between far and close values
+                double targetVelocity = SHOOTER_FAR_VELOCITY - t * (SHOOTER_FAR_VELOCITY - SHOOTER_CLOSE_VELOCITY);
+
+                // Set shooter velocity
+                shooter.setVelocity(targetVelocity);
+
+            } else if (gamepad1.dpad_down) {
+                shooter.setVelocity(0);
+            }
+
+
+        } else if (gamepad1.dpad_down) {
+            shooter.setVelocity(0);
         }
-        if (gamepad1.dpad_down) {
-            shooter.setPower(0);
-        }
+
 
         if (gamepad1.y) {
             intake.setPower(0.75);
@@ -88,10 +128,10 @@ private double power = 0.25;
             intake.setPower(0);
         }
 
-        if (gamepad1.dpad_up) {
+        if (gamepad1.a) {
             servo1.setPosition(1);
         }
-        if (gamepad1.dpad_down) {
+        if (gamepad1.b) {
             servo1.setPosition(0);
         }
 
@@ -102,34 +142,10 @@ private double power = 0.25;
             servo2.setPosition(0);
         }
 
-
-        //tries to rotate until Tx is 0 and uses a while loop
-        //can also freeze robot (CHANGE THIS CODE)
-        //while loops can lock robot
-        if (gamepad1.b) {
-            while (result.getTx() != 0) {
-                if (result.getTx() < 0) {
-                    spinLeft();
-                } else if (result.getTx() > 0) {
-                    spinRight();
-                } else {
-                    brake();
-                }
-            }
+        if (gamepad1.left_bumper) {
+            autoAlign(result);
         }
 
-        //Tx:how far the target is left/right
-        //if target is left: spin left
-        //if target is more right: spin right
-        if (gamepad1.a) {
-            if (result.getTx() < 0) {
-                spinLeft();
-            } else if (result.getTx() > 0) {
-                spinRight();
-            } else {
-                brake();
-            }
-        }
 
 
         if (result != null) {
@@ -145,9 +161,39 @@ private double power = 0.25;
                 telemetry.addData("april tag", result.getFiducialResults());
             }
         }
+
+        telemetry.update();
     }
 
     //helper movement methods
+
+    // Auto-align robot toward target using Limelight Tx
+    private void autoAlign(LLResult result) {
+        if (result == null || !result.isValid()) {
+            brake(); // stop rotation if no valid target
+            return;
+        }
+
+        //horizontal offset
+        double tx = result.getTx();
+
+        // Stop if close enough to target
+        if (Math.abs(tx) <= TX_TOLERANCE) {
+            brake();
+            return;
+        }
+
+        // Proportional control to determine rotation speed
+        double turnPower = tx * ALIGN_KP;
+
+        // Clamp turn speed so it doesn't spin too fast
+        turnPower = Math.max(-MAX_ALIGN_POWER,
+                Math.min(MAX_ALIGN_POWER, turnPower));
+
+        follower.setTeleOpDrive(0, 0, turnPower);
+    }
+
+    //manual helpers
     private void spinRight() {
         // Arguments: (forward, strafe, rotation)
         // 0 forward, 0 strafe, and positive power for rotation
