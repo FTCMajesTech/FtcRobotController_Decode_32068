@@ -17,6 +17,7 @@ public class LimeLightTest2 extends OpMode {
 private Limelight3A limelight;
 private IMU imu;
 private double distance;
+public double scale = 18398.87;
 
 
     @Override
@@ -55,38 +56,23 @@ private double distance;
 
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
-        LLResult llResult = limelight.getLatestResult();
 
+        LLResult llResult = limelight.getLatestResult();
         if (llResult != null && llResult.isValid()) {
             Pose3D botPose = llResult.getBotpose_MT2();
+
             distance = getDistanceFromTage(llResult.getTa());
             telemetry.addData("Distance", distance);
+
             telemetry.addData("Target X", llResult.getTx());
             telemetry.addData("Target Area", llResult.getTa());
             telemetry.addData("BotPose", botPose.toString());
         }
 
-
-
-
-        if (result != null) {
-            if (result.isValid()) {
-                Pose3D botpose = result.getBotpose();
-                //horizontal error
-                telemetry.addData("tx", result.getTx());
-                //vertical error
-                telemetry.addData("ty", result.getTy());
-                //robot position
-                telemetry.addData("Botpose", botpose.toString());
-                //detected AprilTags
-                telemetry.addData("april tag", result.getFiducialResults());
-            }
-        }
     }
 
     public double getDistanceFromTage(double ta) {
-        double scale = 30665.95 ;
-        double distance = (scale / ta);
+        double distance = Math.pow(scale / ta,(1/1.8925));
         return distance;
     }
 }

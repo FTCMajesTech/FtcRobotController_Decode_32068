@@ -20,12 +20,13 @@ private Follower follower;
 private Limelight3A limelight;
 public DcMotorEx shooter;
 public DcMotor intake;
-public Servo servo1;
-public Servo servo2;
+public Servo shooterAngle;
+public Servo gate;
+public Servo pusher;
 private double power = 0.25;
 //how fast robot rotates when auto-aligning
 
-// ===== SHOOTER SETTINGS =====
+//SHOOTER SETTINGS
 private static final double SHOOTER_FAR_VELOCITY = 2400;    // ticks/sec for far shots
 private static final double SHOOTER_CLOSE_VELOCITY = 1600;  // ticks/sec for close shots
 
@@ -33,7 +34,7 @@ private static final double SHOOTER_CLOSE_VELOCITY = 1600;  // ticks/sec for clo
 private static final double FAR_DISTANCE = 2.5;   // meters
 private static final double CLOSE_DISTANCE = 0.8; // meters
 
-// ===== AUTO-ALIGN SETTINGS =====
+//AUTO-ALIGN SETTINGS
 private static final double TX_TOLERANCE = 1.0;   // degrees, how close to target is "aligned"
 private static final double ALIGN_KP = 0.015;     // proportional control factor for turning
 private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during auto-align
@@ -42,19 +43,20 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
     @Override
     public void init() {
         //creates drive follower
-        follower = Constants.createFollower(hardwareMap);
-        follower.update();
+        //follower = Constants.createFollower(hardwareMap);
+        //follower.update();
 
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(FORWARD);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        intake.setDirection(REVERSE);
+        //intake = hardwareMap.get(DcMotor.class, "intake");
+        //intake.setDirection(REVERSE);
 
-        servo1 = hardwareMap.get(Servo.class, "servo1");
-        servo2 = hardwareMap.get(Servo.class, "servo2");
+        shooterAngle = hardwareMap.get(Servo.class, "shooterAngle");
+        //gate = hardwareMap.get(Servo.class, "gate");
+        //pusher = hardwareMap.get(Servo.class, "pusher");
 
         //connects limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -74,19 +76,20 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
     @Override
     public void start() {
         //enables TeleOp driving and starts limelight
-        follower.startTeleOpDrive();
+        //follower.startTeleOpDrive();
         limelight.start();
-        servo1.setPosition(0);
-        servo2.setPosition(0);
+        shooterAngle.setPosition(0);
+        //gate.setPosition(0);
+        //pusher.setPosition(0);
 
     }
 
     @Override
     public void loop() {
-        follower.update();
+        //follower.update();
 
         //updates drive system(left stick Y: forward/back, left stick X: strafe, right stick X: turn)
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        //follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
 
         //gets latest vision result
         LLResult result = limelight.getLatestResult();
@@ -120,32 +123,19 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
             shooter.setVelocity(0);
         }
 
-
-        if (gamepad1.y) {
-            intake.setPower(0.75);
-        }
-        if (gamepad1.x) {
-            intake.setPower(0);
-        }
-
-        if (gamepad1.a) {
-            servo1.setPosition(1);
-        }
-        if (gamepad1.b) {
-            servo1.setPosition(0);
-        }
-
-        if (gamepad1.dpad_left) {
-            servo2.setPosition(1);
-        }
-        if (gamepad1.dpad_right) {
-            servo2.setPosition(0);
-        }
-
         if (gamepad1.left_bumper) {
             autoAlign(result);
         }
 
+        if (gamepad1.a) {
+            shooterAngle.setPosition(0.1);
+            shooter.setPower(0.5);
+        }
+
+        if (gamepad1.b) {
+            shooterAngle.setPosition(0);
+            shooter.setPower(0);
+        }
 
 
         if (result != null) {
@@ -190,25 +180,25 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         turnPower = Math.max(-MAX_ALIGN_POWER,
                 Math.min(MAX_ALIGN_POWER, turnPower));
 
-        follower.setTeleOpDrive(0, 0, turnPower);
+        //follower.setTeleOpDrive(0, 0, turnPower);
     }
 
     //manual helpers
     private void spinRight() {
         // Arguments: (forward, strafe, rotation)
         // 0 forward, 0 strafe, and positive power for rotation
-        follower.setTeleOpDrive(0, 0, -power);
+        //follower.setTeleOpDrive(0, 0, -power);
     }
 
-    private void spinLeft() {
+   private void spinLeft() {
         // 0 forward, 0 strafe, and negative power for rotation
-        follower.setTeleOpDrive(0, 0, power);
+        //follower.setTeleOpDrive(0, 0, power);
     }
 
     //stop all movement
     private void brake() {
         // Sets all movement vectors to zero
-        follower.setTeleOpDrive(0, 0, 0);
+        //follower.setTeleOpDrive(0, 0, 0);
     }
 
 }
