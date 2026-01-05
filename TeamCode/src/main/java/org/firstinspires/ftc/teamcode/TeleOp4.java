@@ -6,18 +6,25 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="TeleOp4", group="Robot")
 public class TeleOp4 extends OpMode {
 private Follower follower;
 private Limelight3A limelight;
+private IMU imu;
+private double distance;
+public double scale = 18398.87;
 public DcMotorEx shooter;
 public DcMotor intake;
 public Servo shooterAngle;
@@ -50,7 +57,6 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         shooter.setDirection(FORWARD);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-
         //intake = hardwareMap.get(DcMotor.class, "intake");
         //intake.setDirection(REVERSE);
 
@@ -58,8 +64,14 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         //gate = hardwareMap.get(Servo.class, "gate");
         //pusher = hardwareMap.get(Servo.class, "pusher");
 
+        shooterAngle.setPosition(1);
+
         //connects limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        imu = hardwareMap.get(IMU.class, "imu");
+        RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+        imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
 
         //telemetry updates every 11ms
         telemetry.setMsTransmissionInterval(11);
@@ -78,7 +90,6 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         //enables TeleOp driving and starts limelight
         //follower.startTeleOpDrive();
         limelight.start();
-        shooterAngle.setPosition(0);
         //gate.setPosition(0);
         //pusher.setPosition(0);
 
@@ -93,6 +104,21 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
 
         //gets latest vision result
         LLResult result = limelight.getLatestResult();
+
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
+
+        LLResult llResult = limelight.getLatestResult();
+        if (llResult != null && llResult.isValid()) {
+            Pose3D botPose = llResult.getBotpose_MT2();
+
+            distance = getDistanceFromTage(llResult.getTa());
+            telemetry.addData("Distance", distance);
+
+            telemetry.addData("Target X", llResult.getTx());
+            telemetry.addData("Target Area", llResult.getTa());
+            telemetry.addData("BotPose", botPose.toString());
+        }
 
         if (gamepad1.dpad_up && result != null && result.isValid()) {
 
@@ -128,12 +154,12 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         }
 
         if (gamepad1.a) {
-            shooterAngle.setPosition(0.1);
+            shooterAngle.setPosition(0.5);
             shooter.setPower(0.5);
         }
 
         if (gamepad1.b) {
-            shooterAngle.setPosition(0);
+            shooterAngle.setPosition(1);
             shooter.setPower(0);
         }
 
@@ -182,6 +208,13 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
 
         //follower.setTeleOpDrive(0, 0, turnPower);
     }
+
+    public double getDistanceFromTage(double ta) {
+        double distance = Math.pow(scale / ta,(1/1.8925));
+        return distance;
+    }
+
+    
 
     //manual helpers
     private void spinRight() {
