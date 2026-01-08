@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import static android.os.SystemClock.sleep;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
@@ -26,10 +27,8 @@ private IMU imu;
 private double distance;
 public double scale = 18398.87;
 public DcMotorEx shooter;
-public DcMotor intake;
-public Servo shooterAngle;
-public Servo gate;
-public Servo pusher;
+public DcMotor intake, transfer;
+public Servo shooterAngle, gate, pusher;
 private double power = 0.25;
 //how fast robot rotates when auto-aligning
 
@@ -59,6 +58,9 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
 
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(REVERSE);
+
+        transfer = hardwareMap.get(DcMotorEx.class, "transfer");
+        transfer.setDirection(FORWARD);
 
         shooterAngle = hardwareMap.get(Servo.class, "shooterAngle");
         gate = hardwareMap.get(Servo.class, "gate");
@@ -154,6 +156,7 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
             autoAlign(result);
         }
 
+        //shooter on
         if (gamepad1.a) {
             shooterAngle.setPosition(0.5);
             shooter.setPower(0.5);
@@ -165,12 +168,23 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         }
 
         if (gamepad1.x) {
-            intake.setPower(0.5);
+            intake.setPower(0.75);
+            transfer.setPower(0.75);
         }
 
         if (gamepad1.y) {
             intake.setPower(0);
+            transfer.setPower(0);
         }
+
+        if (gamepad1.dpad_left) {
+            gate.setPosition(1);
+            sleep(500);
+            gate.setPosition(0);
+        }
+
+
+
         if (result != null) {
             if (result.isValid()) {
                 Pose3D botpose = result.getBotpose();
@@ -219,6 +233,11 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
     public double getDistanceFromTage(double ta) {
         double distance = Math.pow(scale / ta,(1/1.8925));
         return distance;
+    }
+
+    public double getPowerFromDistance(double dist) {
+        double amongus = 0.0007902299*dist + 0.4050294;
+        return amongus;
     }
 
 
