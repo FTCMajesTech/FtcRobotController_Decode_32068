@@ -50,19 +50,19 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
     @Override
     public void init() {
         //creates drive follower
-        //follower = Constants.createFollower(hardwareMap);
-        //follower.update();
+        follower = Constants.createFollower(hardwareMap);
+        follower.update();
 
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(FORWARD);
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        //intake = hardwareMap.get(DcMotor.class, "intake");
-        //intake.setDirection(REVERSE);
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake.setDirection(REVERSE);
 
         shooterAngle = hardwareMap.get(Servo.class, "shooterAngle");
-        //gate = hardwareMap.get(Servo.class, "gate");
-        //pusher = hardwareMap.get(Servo.class, "pusher");
+        gate = hardwareMap.get(Servo.class, "gate");
+        pusher = hardwareMap.get(Servo.class, "pusher");
 
         shooterAngle.setPosition(1);
 
@@ -88,23 +88,24 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
     @Override
     public void start() {
         //enables TeleOp driving and starts limelight
-        //follower.startTeleOpDrive();
+        follower.startTeleOpDrive();
         limelight.start();
-        //gate.setPosition(0);
-        //pusher.setPosition(0);
+        gate.setPosition(0);
+        pusher.setPosition(0);
 
     }
 
     @Override
     public void loop() {
-        //follower.update();
+        follower.update();
 
         //updates drive system(left stick Y: forward/back, left stick X: strafe, right stick X: turn)
-        //follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
 
         //gets latest vision result
         LLResult result = limelight.getLatestResult();
 
+        //
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
 
@@ -128,7 +129,7 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
                 // Use vertical angle Ty to estimate distance to target
                 double ty = result.getTy();
 
-                // Clamp Ty to reasonable values to prevent crazy shooter speeds
+                // Clamp Ty (vertical degrees to target) to reasonable values to prevent crazy shooter speeds
                 double clampedTy = Math.max(-20, Math.min(-5, ty));  // adjust -20..-5 based on field/testing
 
                 // Normalize Ty to 0..1 for interpolation
@@ -163,7 +164,13 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
             shooter.setPower(0);
         }
 
+        if (gamepad1.x) {
+            intake.setPower(0.5);
+        }
 
+        if (gamepad1.y) {
+            intake.setPower(0);
+        }
         if (result != null) {
             if (result.isValid()) {
                 Pose3D botpose = result.getBotpose();
@@ -206,7 +213,7 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         turnPower = Math.max(-MAX_ALIGN_POWER,
                 Math.min(MAX_ALIGN_POWER, turnPower));
 
-        //follower.setTeleOpDrive(0, 0, turnPower);
+        follower.setTeleOpDrive(0, 0, turnPower);
     }
 
     public double getDistanceFromTage(double ta) {
@@ -214,24 +221,10 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         return distance;
     }
 
-    
 
-    //manual helpers
-    private void spinRight() {
-        // Arguments: (forward, strafe, rotation)
-        // 0 forward, 0 strafe, and positive power for rotation
-        //follower.setTeleOpDrive(0, 0, -power);
-    }
-
-   private void spinLeft() {
-        // 0 forward, 0 strafe, and negative power for rotation
-        //follower.setTeleOpDrive(0, 0, power);
-    }
-
-    //stop all movement
     private void brake() {
-        // Sets all movement vectors to zero
-        //follower.setTeleOpDrive(0, 0, 0);
+         //Sets all movement vectors to zero
+        follower.setTeleOpDrive(0, 0, 0);
     }
 
 }
