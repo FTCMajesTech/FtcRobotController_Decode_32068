@@ -32,11 +32,11 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
 
     // Poses
     private final Pose startPose = new Pose(15, 113, Math.toRadians(90));
-    private final Pose shootingSpot = new Pose(60, 84, Math.toRadians(135));
+    private final Pose shootingSpot = new Pose(48, 96, Math.toRadians(135));
     private final Pose closeArtifactStart = new Pose(57.5, 84, Math.toRadians(0));
-    private final Pose closeArtifactCollect = new Pose(20, 84, Math.toRadians(0));
+    private final Pose closeArtifactCollect = new Pose(24, 84, Math.toRadians(0));
     private final Pose middleArtifactStart = new Pose(57.5, 60, Math.toRadians(0));
-    private final Pose middleArtifactCollect = new Pose(20, 60, Math.toRadians(0));
+    private final Pose middleArtifactCollect = new Pose(24, 60, Math.toRadians(0));
     private final Pose endPose = new Pose(57.5, 60, Math.toRadians(0));
     // PathChains
     private PathChain initialShot, closeArtifacts, middleArtifacts;
@@ -46,7 +46,7 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
         // Follower Configs
         follower1 = Constants.createFollower(hardwareMap);
         follower1.setStartingPose(startPose);
-        follower1.setMaxPower(0.75);
+        follower1.setMaxPower(0.67);
 
         // Shooter Configs
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
@@ -54,7 +54,7 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         aim = hardwareMap.get(Servo.class, "aim");
-        aim.setPosition(0.75); // 1=high arc 0=low arc
+        aim.setPosition(1); // 1=high arc 0=low arc
 
         // Intake Configs
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -72,12 +72,13 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
         initialShot = follower1.pathBuilder()
                 // go to shooting spot and fire the preloaded artifacts
                 .addPath(new BezierLine(startPose, shootingSpot))
-                .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.5)
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.8)
 
                 // shooting artifacts
                 .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(1, () -> gateControl(0.1))
-                .addParametricCallback(1, () -> haltThyBot(1200))
+                .addParametricCallback(0, () -> gateControl(0.1))
+                .addParametricCallback(1, this::intakeTransferOn)
+                .addParametricCallback(1, () -> haltThyBot(1500))
 
                 .build();
 
@@ -91,15 +92,17 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
                 .addPath(new BezierLine(closeArtifactStart, closeArtifactCollect))
                 .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.8)
                 .addParametricCallback(1, () -> haltThyBot(1000))
+                .addParametricCallback(1, this::intakeTransferOff)
 
                 // go to shooting spot
                 .addPath(new BezierLine(closeArtifactCollect, shootingSpot))
-                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.5)
+                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
 
                 // shooting artifacts
                 .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(1, () -> gateControl(0.1))
-                .addParametricCallback(1, () -> haltThyBot(1200))
+                .addParametricCallback(0, () -> gateControl(0.1))
+                .addParametricCallback(1, this::intakeTransferOn)
+                .addParametricCallback(1, () -> haltThyBot(1500))
 
                 .build();
 
@@ -113,15 +116,18 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
                 .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
                 .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.8)
                 .addParametricCallback(1, () -> haltThyBot(1000))
+                .addParametricCallback(1, this::intakeTransferOff)
 
                 // go to shooting spot
                 .addPath(new BezierLine(middleArtifactCollect, shootingSpot))
-                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.5)
+                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
 
                 // shooting artifacts
                 .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(1, () -> gateControl(0.1))
-                .addParametricCallback(1, () -> haltThyBot(1200))
+                .addParametricCallback(0, () -> gateControl(0.1))
+                .addParametricCallback(1, this::intakeTransferOn)
+                .addParametricCallback(1, () -> haltThyBot(1500))
+                .addParametricCallback(1, this::intakeTransferOff)
 
                 .addPath(new BezierLine(shootingSpot, endPose))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
@@ -142,9 +148,7 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
         // Autonomous Path
         switch (pathState) {
             case 0:
-                shooter.setPower(0.7);
-                intake.setPower(0.9);
-                transfer.setPower(0.75);
+                shooter.setPower(0.5);
                 follower1.followPath(initialShot, true);
                 pathState = 1;
                 break;
@@ -182,6 +186,19 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
         gate.setPosition(position);
         return null;
     }
+
+    private Runnable intakeTransferOn() {
+        intake.setPower(0.9);
+        transfer.setPower(0.5);
+        return null;
+    }
+
+    private Runnable intakeTransferOff() {
+        intake.setPower(0);
+        transfer.setPower(0);
+        return null;
+    }
+
     public Runnable haltThyBot(int tiempo) {
         follower1.pausePathFollowing();
         sleep(tiempo);

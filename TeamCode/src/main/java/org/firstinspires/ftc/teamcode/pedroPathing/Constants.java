@@ -9,19 +9,23 @@ import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+import java.util.List;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(12.4)
             .forwardZeroPowerAcceleration( -50.31831224151835)
             .lateralZeroPowerAcceleration(-56.67518423396857)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0.0, 0.0025, 0.025))
-            .headingPIDFCoefficients(new PIDFCoefficients(0.75, 0.0, 0.005, 0.025))
-            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.027, 0.0, 0.00025, 0.6, 0.01))
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0.0, 0.0025, 0.03))
+            .headingPIDFCoefficients(new PIDFCoefficients(0.8, 0.0, 0.005, 0.025))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.027, 0.0, 0.0003, 0.6, 0.01))
             .centripetalScaling(0.0005)
             ;
 
@@ -49,9 +53,15 @@ public class Constants {
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
             ;
 
-    public static PathConstraints pathConstraints = new PathConstraints(1, 1, 1.1, 1);
+    public static PathConstraints pathConstraints = new PathConstraints(1, 2, 1.7, 1.5);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
+
+        List<DcMotorEx> driveMotors = hardwareMap.getAll(DcMotorEx.class);
+        for (DcMotorEx motor : driveMotors) {
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
