@@ -28,7 +28,7 @@ private double distance;
 public double scale = 18398.87;
 public DcMotorEx shooter;
 public DcMotor intake, transfer;
-public Servo shooterAngle, gate, pusher;
+public Servo aim, gate, pusher;
 private double power = 0.25;
 //how fast robot rotates when auto-aligning
 
@@ -62,11 +62,11 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
 
-        shooterAngle = hardwareMap.get(Servo.class, "shooterAngle");
+        aim = hardwareMap.get(Servo.class, "aim");
         gate = hardwareMap.get(Servo.class, "gate");
         pusher = hardwareMap.get(Servo.class, "pusher");
 
-        shooterAngle.setPosition(1);
+        aim.setPosition(1);
 
         //connects limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -102,7 +102,7 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
         follower.update();
 
         //updates drive system(left stick Y: forward/back, left stick X: strafe, right stick X: turn)
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
 
         //gets latest vision result
         LLResult result = limelight.getLatestResult();
@@ -158,12 +158,12 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
 
         //shooter on
         if (gamepad1.a) {
-            shooterAngle.setPosition(0.5);
+            aim.setPosition(0.5);
             shooter.setPower(0.5);
         }
 
         if (gamepad1.b) {
-            shooterAngle.setPosition(1);
+            aim.setPosition(1);
             shooter.setPower(0);
         }
 
@@ -177,11 +177,14 @@ private static final double MAX_ALIGN_POWER = 0.35; // max rotation speed during
             transfer.setPower(0);
         }
 
+        // closed .32, open .1
         if (gamepad1.dpad_left) {
-            gate.setPosition(1);
-            sleep(500);
-            gate.setPosition(0);
+            gate.setPosition(.1);
         }
+        if (gamepad1.dpad_right) {
+            gate.setPosition(.32);
+        }
+
 
 
 
