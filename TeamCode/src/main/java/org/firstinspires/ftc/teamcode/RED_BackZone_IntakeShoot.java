@@ -52,7 +52,7 @@ public class RED_BackZone_IntakeShoot extends OpMode {
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         aim = hardwareMap.get(Servo.class, "aim");
-        aim.setPosition(0.9);
+        aim.setPosition(0.75); // 1=high arc 0=low arc
 
         // Intake Configs
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -135,13 +135,14 @@ public class RED_BackZone_IntakeShoot extends OpMode {
         // Update Follower
         follower1.update();
 
-        shooter.setPower(0.7);
-        intake.setPower(0.9);
-        transfer.setPower(0.75);
+
 
         // Autonomous Path
         switch (pathState) {
             case 0:
+                shooter.setPower(0.7);
+                intake.setPower(0.9);
+                transfer.setPower(0.75);
                 follower1.followPath(initialShot, true);
                 pathState = 1;
                 break;
@@ -159,6 +160,9 @@ public class RED_BackZone_IntakeShoot extends OpMode {
                 break;
             case 3:
                 if (!follower1.isBusy()) {
+                    shooter.setPower(0);
+                    intake.setPower(0);
+                    transfer.setPower(0);
                     pathState = 4;
                 }
                 break;
