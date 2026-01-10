@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Autonomous(name = "RED_TopZone_ShootONLY", group = "Robot")
 public class RED_TopZone_ShootONLY extends OpMode {
 
-    // Variables
+    // Instance and Global Variables
     public Follower follower1;
     public DcMotorEx shooter;
     public DcMotor intake, transfer;
