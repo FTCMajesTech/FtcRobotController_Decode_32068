@@ -42,7 +42,7 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
         // Follower Configs
         follower1 = Constants.createFollower(hardwareMap);
         follower1.setStartingPose(startPose);
-        follower1.setMaxPower(0.75);
+        follower1.setMaxPower(0.67);
 
         // Shooter Configs
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
@@ -50,7 +50,7 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         aim = hardwareMap.get(Servo.class, "aim");
-        aim.setPosition(0.9);
+        aim.setPosition(0.6); // 1=high arc 0=low arc
 
         // Intake Configs
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -68,15 +68,17 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
         initialShot = follower1.pathBuilder()
                 // go to shooting spot and fire the preloaded artifacts
                 .addPath(new BezierLine(startPose, shootingSpot))
-                .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.5)
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.8)
 
                 // shooting artifacts
                 .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(1, () -> gateControl(0.1))
-                .addParametricCallback(1, () -> haltThyBot(1200))
+                .addParametricCallback(0, () -> gateControl(0.1))
+                .addParametricCallback(1, this::intakeTransferOn)
+                .addParametricCallback(1, () -> haltThyBot(1500))
+                .addParametricCallback(1, this::intakeTransferOff)
 
                 .addPath(new BezierLine(shootingSpot,endPose))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(),0.5)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(),0.8)
 
                 .build();
     }
@@ -87,18 +89,19 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
         // Update Follower
         follower1.update();
 
-        shooter.setPower(0.7);
-        intake.setPower(0.9);
-        transfer.setPower(0.75);
 
         // Autonomous Path
         switch (pathState) {
             case 0:
+                shooter.setPower(0.7);
                 follower1.followPath(initialShot, true);
                 pathState = 1;
                 break;
             case 1:
                 if (!follower1.isBusy()) {
+                    shooter.setPower(0);
+                    intake.setPower(0);
+                    transfer.setPower(0);
                     pathState = 2;
                 }
                 break;
@@ -112,11 +115,24 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
     }
 
     // Runnables
-    public Runnable gateControl(double position) {
+    private Runnable gateControl(double position) {
         gate.setPosition(position);
         return null;
     }
-    public Runnable haltThyBot(int tiempo) {
+
+    private Runnable intakeTransferOn() {
+        intake.setPower(0.9);
+        transfer.setPower(0.5);
+        return null;
+    }
+
+    private Runnable intakeTransferOff() {
+        intake.setPower(0);
+        transfer.setPower(0);
+        return null;
+    }
+
+    private Runnable haltThyBot(int tiempo) {
         follower1.pausePathFollowing();
         sleep(tiempo);
         follower1.resumePathFollowing();
