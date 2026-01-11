@@ -121,7 +121,7 @@ public class RED_BackZone_ShootONLY extends OpMode {
 
     private Runnable intakeTransferOn() {
         intake.setPower(0.9);
-        transfer.setPower(0.5);
+        transfer.setPower(1);
         return null;
     }
 

@@ -33,7 +33,7 @@ public class BLUE_TopZone_ShootONLY extends OpMode {
     // Poses
     private final Pose startPose = new Pose(15, 113, Math.toRadians(90));
     private final Pose shootingSpot = new Pose(48, 96, Math.toRadians(135));
-    private final Pose endPose = new Pose(57.5, 60, Math.toRadians(0));
+    private final Pose endPose = new Pose(46, 60, Math.toRadians(0));
     // PathChains
     private PathChain initialShot;
 
@@ -122,7 +122,7 @@ public class BLUE_TopZone_ShootONLY extends OpMode {
 
     private Runnable intakeTransferOn() {
         intake.setPower(0.9);
-        transfer.setPower(0.5);
+        transfer.setPower(1);
         return null;
     }
 

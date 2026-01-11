@@ -34,11 +34,11 @@ public class RED_TeleOp extends OpMode {
     public double scale = 18398.87;
     public DcMotorEx shooter;
     public DcMotor intake, transfer;
-    public Servo aim, gate;
+    public Servo aim, gate, pusher;
 
     // --- NEW CONSTANTS FOR AUTO-AIM ---
     // kP (Proportional) gain: Higher = faster turn, but might oscillate
-    final double kP_AIM = 0.035;
+    final double kP_AIM = 0.025;
     final double MIN_AIM_POWER = 0.05; // Minimum power to overcome friction
     // ----------------------------------
 
@@ -65,6 +65,9 @@ public class RED_TeleOp extends OpMode {
 
         gate = hardwareMap.get(Servo.class, "gate");
         gate.setPosition(0.32);
+
+        pusher = hardwareMap.get(Servo.class, "pusher");
+        pusher.setPosition(0.1); // 0.1=open  0.4=push up
 
         // Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -99,7 +102,39 @@ public class RED_TeleOp extends OpMode {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
 
-        // CHECK FOR AUTO-AIM TRIGGER (Holding Right Trigger)
+        // CHECK FOR AUTO-AIM TRIGGER (Holding Right/Left Trigger)
+        // FAR Shooting
+        if (gamepad1.left_trigger > 0.1 && result != null && result.isValid()) {
+
+            gate.setPosition(0.1);
+
+            // 1. CALCULATE DISTANCE (Using your existing area-based method)
+            distance = getDistanceFromTage(result.getTa());
+
+            // 2. AUTO-ALIGN HEADING
+            // tx is the horizontal offset. We want to rotate until tx is 0.
+            double tx = result.getTx();
+            rotate = -tx * kP_AIM;
+
+            // Add small power if we aren't centered to overcome friction
+            if (Math.abs(tx) > 0.5 && Math.abs(rotate) < MIN_AIM_POWER) {
+                rotate = Math.signum(rotate) * MIN_AIM_POWER;
+            }
+
+            // 3. FINE-TUNE MOVEMENT (Slow down as robot gets closer)
+            // If distance is 10, speed is 30%. If distance is 60, speed is 100%.
+            double speedMultiplier = Range.scale(distance, 10, 60, 0.3, 1.0);
+            drive *= speedMultiplier;
+            strafe *= speedMultiplier;
+            follower.setTeleOpDrive(drive, strafe, rotate);
+
+            // 4. AUTOMATIC SHOOTER ADJUSTMENTS
+            shooter.setPower(0.7);
+            aim.setPosition(0.6);
+
+        }
+
+        // Close Shooting
         if (gamepad1.right_trigger > 0.1 && result != null && result.isValid()) {
 
             gate.setPosition(0.1);
@@ -125,17 +160,52 @@ public class RED_TeleOp extends OpMode {
             follower.setTeleOpDrive(drive, strafe, rotate);
 
             // 4. AUTOMATIC SHOOTER ADJUSTMENTS
-            updateShooterHardware(distance);
-        } else {
-            shooter.setPower(0);
-            aim.setPosition(1);
-            gate.setPosition(0.32);
+            shooter.setPower(0.6);
+            aim.setPosition(0.7);
+
         }
 
         // Set drive controls
         //follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
 
         // int tagId = result.getFiducialResults().get(0).getFiducialId();
+
+        // Manual Controls
+        if (gamepad1.xWasPressed()) {
+            shooter.setPower(0);
+            aim.setPosition(1);
+            gate.setPosition(0.32);
+        }
+
+        if (gamepad1.aWasPressed()) {
+            intake.setPower(.75);
+            transfer.setPower(0.6);
+        }
+
+        if (gamepad1.bWasPressed()) {
+            intake.setPower(0);
+            transfer.setPower(0);
+        }
+
+        // override for gate to open (closes automatically due to trigger else statement)
+        if (gamepad1.dpad_left) {
+            gate.setPosition(0.1);
+        }
+
+        // far shot
+        if (gamepad1.left_bumper) {
+            shooter.setPower(0.7);
+            aim.setPosition(0.6);
+            gate.setPosition(0.1);
+        }
+
+        //if (gamepad1.right_bumper) {
+            //shooter.setPower(0.5);
+            //aim.setPosition(0.8);
+            //gate.setPosition(0.1);
+        //}
+
+
 
         // Telemetry
         if (result != null && result.isValid()) {
@@ -146,30 +216,6 @@ public class RED_TeleOp extends OpMode {
             telemetry.addData("Mode", "Manual Drive");
         }
         telemetry.update();
-
-        // Manual Controls
-        if (gamepad1.xWasPressed()) {
-            shooter.setPower(0);
-        }
-
-        if (gamepad1.aWasPressed()) {
-            intake.setPower(0.75);
-            transfer.setPower(0.5);
-        }
-
-        if (gamepad1.bWasPressed()) {
-            intake.setPower(0);
-            transfer.setPower(0);
-        }
-
-        if (gamepad1.dpad_right) {
-            gate.setPosition(0.1); // open
-        }
-
-        if (gamepad1.dpad_left) {
-            gate.setPosition(0.32); // closed
-        }
-
     }
 
     // Custom Methods
@@ -183,17 +229,18 @@ public class RED_TeleOp extends OpMode {
     }
 
     // --- NEW METHOD: SHOOTER AUTOMATION ---
-    private void updateShooterHardware(double dist) {
+    private void updateShooterHardwareCLOSE(double dist) {
         // Example logic: adjust these numbers based on your testing!
 
         // SHOOTER SPEED: Faster when further away
         // Power = distance * slope + intercept
-        double shooterPower = Range.clip((0.0007902299*dist + 0.4050294) + 0.5, 0.0, 1.0);
-        shooter.setPower(shooterPower);
+        //double shooterPower = Range.clip((0.0007902299*dist) + 0.4050294, 0.0, 1.0);
+        shooter.setPower(0.6);
 
         // AIM SERVO: Higher angle when further away
         // Position = distance * slope + intercept
-        double aimPosition = Range.clip((dist * 0.008) + 0.2, 1.0, 0.6);
+        //double aimPosition = Range.clip((dist * 0.008) + 0.2, 1.0, 0.6);
+        double aimPosition = 0.8;
         aim.setPosition(aimPosition);
     }
 }
