@@ -83,7 +83,7 @@ public class BLUE_BackZone_IntakeShoot extends OpMode {
                 .build();
 
         closeArtifacts = follower1.pathBuilder()
-                // go from first shot to collect first row of artifacts
+                // go from first shot to collect first row of balls
                 .addPath(new BezierLine(shootingSpot, closeArtifactStart))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.8)
                 .addParametricCallback(1,() -> gateControl(0.32))

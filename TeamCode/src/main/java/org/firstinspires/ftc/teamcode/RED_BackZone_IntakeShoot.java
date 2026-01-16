@@ -5,6 +5,8 @@ import static android.os.SystemClock.sleep;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -61,8 +63,8 @@ public class RED_BackZone_IntakeShoot extends OpMode {
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
 
-        gate = hardwareMap.get(Servo.class, "gate");
-        gate.setPosition(.32); // closed .32, open .1
+        //gate = hardwareMap.get(Servo.class, "gate");
+        //gate.setPosition(.32); // closed .32, open .1
 
 
 
@@ -139,6 +141,7 @@ public class RED_BackZone_IntakeShoot extends OpMode {
     public void loop() {
         // Update Follower
         follower1.update();
+        Constants.FCDPose = follower.getPose();
 
         // Autonomous Path
         switch (pathState) {

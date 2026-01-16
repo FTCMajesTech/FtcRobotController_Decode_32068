@@ -7,6 +7,7 @@ import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,6 +20,16 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import java.util.List;
 
 public class Constants {
+    public static Pose FCDPose = new Pose (24, 24);
+
+    public static void setLastPose(Pose pose) {
+        FCDPose = pose;
+    }
+
+    public Pose getLastPose() {
+        return FCDPose;
+    }
+
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(12.4)
             .forwardZeroPowerAcceleration( -50.31831224151835)
