@@ -33,7 +33,7 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
     // Poses
     private final Pose startPose = new Pose(57.5, 9, Math.toRadians(90));
     private final Pose shootingSpot = new Pose(57.5, 12, Math.toRadians(120));
-    private final Pose endPose = new Pose(57.5, 36, Math.toRadians(0));
+    private final Pose endPose = new Pose(57.5, 36, Math.toRadians(90));
     // PathChains
     private PathChain initialShot;
 

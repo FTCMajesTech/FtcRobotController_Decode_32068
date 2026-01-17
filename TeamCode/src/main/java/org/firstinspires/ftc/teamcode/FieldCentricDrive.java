@@ -69,11 +69,11 @@ public class FieldCentricDrive extends OpMode {
         // *** PIDF TUNING ***
 
         // Access the internal PIDF coefficients
-        // P = Proportional (How hard it tries to reach the speed)
+        // P = Proportional (How hard it tries to reach the speed)(If motor is taking too long to get to target value, increase, vice versa)
         // I = Integral (How much it corrects for long-term errors)
         // D = Derivative (How much it prevents overshooting)
-        // F = Feedforward (The "base" power needed for this speed)
-        shooter.setVelocityPIDFCoefficients(10.0, 0.1, 0.0, 13.0);
+        // F = Feedforward (The "base" power needed for this speed)(If current velocity is too higher then target velocity and maintain it, reduce, vice versa)
+        shooter.setVelocityPIDFCoefficients(11.0, 0.1, 0.0, 13.0); // P=10/11, I=0.1, D=0, F=13
 
         // --- Servos ---
         aim = hardwareMap.get(Servo.class, "aim");

@@ -37,7 +37,7 @@ public class RED_BackZone_IntakeShoot extends OpMode {
     private final Pose closeArtifactCollect = new Pose(120, 36, Math.toRadians(180));
     private final Pose middleArtifactStart = new Pose(86.5, 60, Math.toRadians(180));
     private final Pose middleArtifactCollect = new Pose(120, 60, Math.toRadians(180));
-    private final Pose endPose = new Pose(86.5, 36, Math.toRadians(180));
+    private final Pose endPose = new Pose(86.5, 36, Math.toRadians(90));
     // PathChains
     private PathChain initialShot, closeArtifacts, middleArtifacts;
 

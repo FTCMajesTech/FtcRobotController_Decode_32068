@@ -37,7 +37,7 @@ public class BLUE_TopZone_IntakeShoot extends OpMode {
     private final Pose closeArtifactCollect = new Pose(24, 84, Math.toRadians(0));
     private final Pose middleArtifactStart = new Pose(57.5, 60, Math.toRadians(0));
     private final Pose middleArtifactCollect = new Pose(24, 60, Math.toRadians(0));
-    private final Pose endPose = new Pose(46, 60, Math.toRadians(0));
+    private final Pose endPose = new Pose(46, 60, Math.toRadians(90));
     // PathChains
     private PathChain initialShot, closeArtifacts, middleArtifacts;
 
