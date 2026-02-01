@@ -28,6 +28,7 @@ public class RED_TopZone_IntakeShoot extends OpMode {
     public Servo aim;
     public Servo gate;
     public Servo pusher;
+    public DcMotor FRdrive, BRdrive, BLdrive, FLdrive;
     private int pathState;
 
     // Poses
@@ -48,6 +49,16 @@ public class RED_TopZone_IntakeShoot extends OpMode {
         follower1.setStartingPose(startPose);
         follower1.setMaxPower(0.67);
 
+        //drive Configs
+        /*FLdrive = hardwareMap.get(DcMotor.class, "FLdrive");
+        FRdrive = hardwareMap.get(DcMotor.class, "FRdrive");
+        BLdrive = hardwareMap.get(DcMotor.class, "BLdrive");
+        BRdrive = hardwareMap.get(DcMotor.class, "FLdrive");
+        FLdrive.setDirection(REVERSE);
+        FRdrive.setDirection(FORWARD);
+        BLdrive.setDirection(REVERSE);
+        BRdrive.setDirection(FORWARD);
+*/
         // Shooter Configs
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(FORWARD);
@@ -75,10 +86,10 @@ public class RED_TopZone_IntakeShoot extends OpMode {
                 .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.5)
 
                 // shooting artifacts
-                .addParametricCallback(1, () -> haltThyBot(1500))
                 .addParametricCallback(0, () -> gateControl(0.1))
-                .addParametricCallback(1, this::intakeTransferOn)
-                .addParametricCallback(1, () -> haltThyBot(1500))
+                .addParametricCallback(0.95, () -> haltThyBot(1500))
+                .addParametricCallback(0.95, this::intakeTransferOn)
+                .addParametricCallback(0.95, () -> haltThyBot(1500))
 
                 .build();
 
@@ -86,23 +97,23 @@ public class RED_TopZone_IntakeShoot extends OpMode {
                 // go from first shot to collect first row of artifacts
                 .addPath(new BezierLine(shootingSpot, closeArtifactStart))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.8)
-                .addParametricCallback(1,() -> gateControl(0.32))
+                .addParametricCallback(0.95,() -> gateControl(0.32))
 
                 // collect the artifacts
                 .addPath(new BezierLine(closeArtifactStart, closeArtifactCollect))
                 .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.8)
-                .addParametricCallback(1, () -> haltThyBot(1000))
-                .addParametricCallback(1, this::intakeTransferOff)
+                .addParametricCallback(0.95, () -> haltThyBot(1000))
+                .addParametricCallback(0.95, this::intakeTransferOff)
 
                 // go to shooting spot
                 .addPath(new BezierLine(closeArtifactCollect, shootingSpot))
                 .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
 
                 // shooting artifacts
-                .addParametricCallback(1, () -> haltThyBot(1500))
+                .addParametricCallback(0.95, () -> haltThyBot(1500))
                 .addParametricCallback(0, () -> gateControl(0.1))
-                .addParametricCallback(1, this::intakeTransferOn)
-                .addParametricCallback(1, () -> haltThyBot(1500))
+                .addParametricCallback(0.95, this::intakeTransferOn)
+                .addParametricCallback(0.95, () -> haltThyBot(1500))
 
                 .build();
 
@@ -110,24 +121,24 @@ public class RED_TopZone_IntakeShoot extends OpMode {
                 // go from first shot to collect first row of artifacts
                 .addPath(new BezierLine(shootingSpot, middleArtifactStart))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.8)
-                .addParametricCallback(1, () -> gateControl(0.32))
+                .addParametricCallback(0.95, () -> gateControl(0.32))
 
                 // collect the artifacts
                 .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
                 .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.8)
-                .addParametricCallback(1, () -> haltThyBot(1000))
-                .addParametricCallback(1, this::intakeTransferOff)
+                .addParametricCallback(0.95, () -> haltThyBot(1000))
+                .addParametricCallback(0.95, this::intakeTransferOff)
 
                 // go to shooting spot
                 .addPath(new BezierLine(middleArtifactCollect, shootingSpot))
                 .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
 
                 // shooting artifacts
-                .addParametricCallback(1, () -> haltThyBot(1500))
+                .addParametricCallback(0.95, () -> haltThyBot(1500))
                 .addParametricCallback(0, () -> gateControl(0.1))
-                .addParametricCallback(1, this::intakeTransferOn)
-                .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(1, this::intakeTransferOff)
+                .addParametricCallback(0.95, this::intakeTransferOn)
+                .addParametricCallback(0.95, () -> haltThyBot(1500))
+                .addParametricCallback(0.95, this::intakeTransferOff)
 
                 .addPath(new BezierLine(shootingSpot, endPose))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
@@ -200,6 +211,7 @@ public class RED_TopZone_IntakeShoot extends OpMode {
 
     public Runnable haltThyBot(int tiempo) {
         follower1.pausePathFollowing();
+        follower1.setTeleOpDrive(0, 0, 0);
         sleep(tiempo);
         follower1.resumePathFollowing();
         return null;
