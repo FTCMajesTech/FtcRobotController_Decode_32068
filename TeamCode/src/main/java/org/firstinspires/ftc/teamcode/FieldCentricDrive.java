@@ -73,7 +73,7 @@ public class FieldCentricDrive extends OpMode {
         // I = Integral (How much it corrects for long-term errors)
         // D = Derivative (How much it prevents overshooting)
         // F = Feedforward (The "base" power needed for this speed)(If current velocity is too higher then target velocity and maintain it, reduce, vice versa)
-        shooter.setVelocityPIDFCoefficients(11.0, 0.1, 0.0, 13.0); // P=10/11, I=0.1, D=0, F=13
+        shooter.setVelocityPIDFCoefficients(15.0, 0.1, 0.0, 13.0); // P=10/11, I=0.1, D=0, F=13
 
         // --- Servos ---
         aim = hardwareMap.get(Servo.class, "aim");
@@ -169,7 +169,7 @@ public class FieldCentricDrive extends OpMode {
 
 
             // SHOOTING SEQUENCE
-            if (shooter.getVelocity() >= (targetVelocity - 50) && shooter.getVelocity() <= (targetVelocity + 50)) {
+            if (shooter.getVelocity() >= (targetVelocity - 100) && shooter.getVelocity() <= (targetVelocity + 100)) {
                 gate.setPosition(0.1);
                 intake.setPower(.75);
                 transfer.setPower(1);
