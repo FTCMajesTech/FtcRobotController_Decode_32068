@@ -18,8 +18,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "RED_TopZone_IntakeShoot", group = "Robot")
-public class RED_TopZone_IntakeShoot extends OpMode {
+@Autonomous(name = "RED_TopZone_IntakeShoot2", group = "Robot")
+public class RED_TopZone_IntakeShoot2 extends OpMode {
 
     // Variables
     public Follower follower1;
@@ -40,7 +40,7 @@ public class RED_TopZone_IntakeShoot extends OpMode {
     private final Pose middleArtifactCollect = new Pose(124, 60, Math.toRadians(180));
     private final Pose endPose = new Pose(96, 60, Math.toRadians(90));
     // PathChains
-    private PathChain initialShot, closeArtifacts, middleArtifacts;
+    private PathChain initialShot, closeArtifacts, closeArtifacts2, middleArtifacts, middleArtifacts2;
 
     @Override
     public void init() {
@@ -102,8 +102,11 @@ public class RED_TopZone_IntakeShoot extends OpMode {
                 // collect the artifacts
                 .addPath(new BezierLine(closeArtifactStart, closeArtifactCollect))
                 .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.8)
-                .addParametricCallback(0.95, () -> haltThyBot(1000))
-                .addParametricCallback(0.95, this::intakeTransferOff)
+                //.addParametricCallback(0.95, () -> haltThyBot(1000))
+                //.addParametricCallback(0.95, this::intakeTransferOff)
+                .build();
+
+        closeArtifacts2 = follower1.pathBuilder()
 
                 // go to shooting spot
                 .addPath(new BezierLine(closeArtifactCollect, shootingSpot))
@@ -129,6 +132,9 @@ public class RED_TopZone_IntakeShoot extends OpMode {
                 .addParametricCallback(0.95, () -> haltThyBot(1000))
                 .addParametricCallback(0.95, this::intakeTransferOff)
 
+                .build();
+
+        middleArtifacts2 = follower1.pathBuilder()
                 // go to shooting spot
                 .addPath(new BezierLine(middleArtifactCollect, shootingSpot))
                 .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
@@ -164,19 +170,38 @@ public class RED_TopZone_IntakeShoot extends OpMode {
                 pathState = 1;
                 break;
             case 1:
-                pathState = 2;
-                break;
-            case 2:
                 if (!follower1.isBusy()) {
                     follower1.followPath(closeArtifacts, true);
-                    pathState = 3;
+                    pathState = 67;
                 }
+                break;
+            case 67:
+                if (!follower1.isBusy()) {
+                    haltThyBot(3000);
+                    intakeTransferOff();
+                    pathState = 2;
+                }
+                break;
+            case 2:
+                    follower1.followPath(closeArtifacts2, true);
+                    pathState = 3;
                 break;
             case 3:
                 if (!follower1.isBusy()) {
                     follower1.followPath(middleArtifacts, true);
-                    pathState = 4;
+                    pathState = 33;
                 }
+                break;
+            case 33:
+                if (!follower1.isBusy()) {
+                    haltThyBot(3000);
+                    intakeTransferOff();
+                    pathState = 41;
+                }
+                break;
+            case 41:
+                follower1.followPath(middleArtifacts2, true);
+                pathState = 4;
                 break;
             case 4:
                 if (!follower1.isBusy()) {
