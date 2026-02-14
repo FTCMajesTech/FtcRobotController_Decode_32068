@@ -32,8 +32,8 @@ public class Constants {
 
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(12.4)
-            .forwardZeroPowerAcceleration( -50.31831224151835)
-            .lateralZeroPowerAcceleration(-56.67518423396857)
+            .forwardZeroPowerAcceleration( -41.97662504906627)
+            .lateralZeroPowerAcceleration(-66.9983690329619)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0.0, 0.0025, 0.03))
             .headingPIDFCoefficients(new PIDFCoefficients(0.8, 0.0, 0.005, 0.025))
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.027, 0.0, 0.0003, 0.6, 0.01))
@@ -56,7 +56,7 @@ public class Constants {
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(169)
-            .strafePodX(208)
+            .strafePodX(204)
             .distanceUnit(DistanceUnit.MM)
             .hardwareMapName("stalker")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
