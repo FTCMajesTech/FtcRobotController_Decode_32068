@@ -91,7 +91,7 @@ public class RED_TeleOp extends OpMode {
         follower.update();
 
         // Setting TeleOp drive
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+        follower.setTeleOpDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, -gamepad1.right_stick_x);
         double rotate;
         double drive = 0;
         double strafe = 0;

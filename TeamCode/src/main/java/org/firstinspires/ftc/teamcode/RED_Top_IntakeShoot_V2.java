@@ -74,9 +74,31 @@ public class RED_Top_IntakeShoot_V2 extends OpMode {
                 
                 .build();
 
+       /* closeArtifacts = follower1.pathBuilder()
+                // go from first shot to collect first row of artifacts
+                .addPath(new BezierLine(shootingSpot, closeArtifactStart))
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.8)
+                .build();
+        closeArtifacts2 = follower1.pathBuilder()
+                .addPath(new BezierLine(closeArtifactCollect,shootingSpot))
+                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .build();
+
+        middleArtifacts = follower1.pathBuilder()
+                second shot to middle artifacts
+                .addPath(new BezierLine(shootingSpot, middleArtifactStart))
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.8)
+                .build();
+        middleArtifacts2 = follower1.pathBuilder()
+                .addPath(new BezierLine(middleArtifactCollect, shootingSpot))
+                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .build();
+
+        endOfAuto = follower1.pathBuilder()
+                .addPath(new BezierLine(shootingSpot, endPose))
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
+                .build();*/
     }
-
-
 
 
 
@@ -94,15 +116,54 @@ public class RED_Top_IntakeShoot_V2 extends OpMode {
                 // shooting artifacts
                 gate.setPosition(0.1);
                 intake.setPower(0.9);
-                transfer.setPower(1);
-                pathState = 8;
+                pathState = 6;
                 break;
-            case 8:
+           /* case 1:
+                if (!follower1.isBusy()) {
+                    gate.setPosition(0.32);
+                    transfer.setPower(1);
+                    follower1.followPath(closeArtifacts, true);
+                    pathState = 2;
+                }
+                break;
+            case 2:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(closeArtifacts2, true);
+                    // shooting artifacts
+                    gate.setPosition(0.1);
+                    intake.setPower(0.9);
+                    pathState = 3;
+                }
+                break;
+            case 3:
+                if (!follower1.isBusy()) {
+                    gate.setPosition(0.32);
+                    transfer.setPower(1);
+                    follower1.followPath(middleArtifacts, true);
+                    pathState = 4;
+                }
+                break;
+            case 4:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(middleArtifacts2, true);
+                    // shooting artifacts
+                    gate.setPosition(0.1);
+                    intake.setPower(0.9);
+                    pathState = 5;
+                }
+                break;
+            case 5:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(endOfAuto, true);
+                    pathState = 6;
+                }
+                break;
+            */case 6:
                 if (!follower1.isBusy()) {
                     shooter.setPower(0);
                     intake.setPower(0);
                     transfer.setPower(0);
-                    pathState = 9;
+                    pathState = 7;
                 }
                 break;
         }
