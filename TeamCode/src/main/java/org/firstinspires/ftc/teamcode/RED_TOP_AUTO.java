@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "Auto", group = "Robot")
+@Autonomous(name = "TEST_AUTO_RED", group = "Robot")
 public class RED_TOP_AUTO extends OpMode {
     // Variables
     public Follower follower1;

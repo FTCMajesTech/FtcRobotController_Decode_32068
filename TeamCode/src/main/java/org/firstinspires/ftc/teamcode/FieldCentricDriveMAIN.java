@@ -21,7 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
-@TeleOp(name="FieldCentricDriveMAIN", group="Robot")
+@TeleOp(name="MAIN_FCD", group="Robot")
 public class FieldCentricDriveMAIN extends OpMode {
     // --- HARDWARE ---
     private Follower follower;
