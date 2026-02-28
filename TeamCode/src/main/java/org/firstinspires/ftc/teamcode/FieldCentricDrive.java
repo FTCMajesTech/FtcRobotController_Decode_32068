@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
 
-@TeleOp(name="FieldCentricDrive", group="Robot")
+@TeleOp(name="FCD_forTesting", group="Robot")
 public class FieldCentricDrive extends OpMode {
     // --- HARDWARE ---
     private Follower follower;
@@ -190,6 +190,7 @@ public class FieldCentricDrive extends OpMode {
             aim.setPosition(1);
             gate.setPosition(0.32);
         }
+
 
         if (gamepad1.aWasPressed()) { // Intake on
             intake.setPower(.75);

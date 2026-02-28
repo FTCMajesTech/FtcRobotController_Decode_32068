@@ -16,19 +16,22 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "RED_BackZone_IntakeShoot", group = "Robot")
 public class RED_BackZone_IntakeShoot extends OpMode {
 
-    // Variables
     public Follower follower1;
     public DcMotorEx shooter;
-    public DcMotor intake, transfer;
+    public DcMotor intake, transfer, backTransfer;
     public Servo aim;
     public Servo gate;
     public Servo pusher;
+
     private int pathState;
+    private ElapsedTime timer = new ElapsedTime();
 
     // Poses
     private final Pose startPose = new Pose(86.5, 9, Math.toRadians(90));
@@ -39,14 +42,14 @@ public class RED_BackZone_IntakeShoot extends OpMode {
     private final Pose middleArtifactCollect = new Pose(120, 60, Math.toRadians(180));
     private final Pose endPose = new Pose(86.5, 36, Math.toRadians(90));
     // PathChains
-    private PathChain initialShot, closeArtifacts, middleArtifacts;
+    private PathChain initialShot, closeArtifacts, closeArtifacts2, closeArtifacts3, middleArtifacts, middleArtifacts2, middleArtifacts3, endOfAuto;
 
     @Override
     public void init() {
         // Follower Configs
         follower1 = Constants.createFollower(hardwareMap);
         follower1.setStartingPose(startPose);
-        follower1.setMaxPower(0.67);
+        follower1.setMaxPower(1);
 
         // Shooter Configs
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
@@ -54,7 +57,7 @@ public class RED_BackZone_IntakeShoot extends OpMode {
         shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         aim = hardwareMap.get(Servo.class, "aim");
-        aim.setPosition(0.6); // 1=high arc 0=low arc
+        aim.setPosition(1); // 1=high arc 0=low arc
 
         // Intake Configs
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -62,112 +65,149 @@ public class RED_BackZone_IntakeShoot extends OpMode {
 
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
+        backTransfer = hardwareMap.get(DcMotorEx.class, "backTransfer");
+        backTransfer.setDirection(REVERSE);
 
-        //gate = hardwareMap.get(Servo.class, "gate");
-        //gate.setPosition(.32); // closed .32, open .1
-
-
+        gate = hardwareMap.get(Servo.class, "gate");
+        gate.setPosition(.25); //0.32 is old close, new gate close is 0.25 , new gate open is 0.43, old gate open is 0.1
 
         // Paths
         initialShot = follower1.pathBuilder()
                 // go to shooting spot and fire the preloaded artifacts
                 .addPath(new BezierLine(startPose, shootingSpot))
-                .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.8)
-
-                // shooting artifacts
-                .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(0, () -> gateControl(0.1))
-                .addParametricCallback(1, this::intakeTransferOn)
-                .addParametricCallback(1, () -> haltThyBot(1500))
-
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.5)
                 .build();
 
         closeArtifacts = follower1.pathBuilder()
                 // go from first shot to collect first row of artifacts
                 .addPath(new BezierLine(shootingSpot, closeArtifactStart))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.8)
-                .addParametricCallback(1,() -> gateControl(0.32))
-
-                // collect the artifacts
-                .addPath(new BezierLine(closeArtifactStart, closeArtifactCollect))
+                .build();
+        closeArtifacts2 = follower1.pathBuilder()
+                .addPath(new BezierLine(closeArtifactStart,closeArtifactCollect))
                 .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.8)
-                .addParametricCallback(1, () -> haltThyBot(1000))
-                .addParametricCallback(1, this::intakeTransferOff)
-
-                // go to shooting spot
-                .addPath(new BezierLine(closeArtifactCollect, shootingSpot))
-                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
-
-                // shooting artifacts
-                .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(0, () -> gateControl(0.1))
-                .addParametricCallback(1, this::intakeTransferOn)
-                .addParametricCallback(1, () -> haltThyBot(1500))
-
+                .build();
+        closeArtifacts3 = follower1.pathBuilder()
+                .addPath(new BezierLine(closeArtifactCollect,shootingSpot))
+                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
                 .build();
 
         middleArtifacts = follower1.pathBuilder()
-                // go from first shot to collect first row of artifacts
+                //second shot to middle artifacts
                 .addPath(new BezierLine(shootingSpot, middleArtifactStart))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.8)
-                .addParametricCallback(1, () -> gateControl(0.32))
-
-                // collect the artifacts
+                .build();
+        middleArtifacts2 = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
                 .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.8)
-                .addParametricCallback(1, () -> haltThyBot(1000))
-                .addParametricCallback(1, this::intakeTransferOff)
+                .build();
+        middleArtifacts3 = follower1.pathBuilder()
+                .addPath(new BezierLine(middleArtifactCollect,shootingSpot))
+                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .build();
 
-                // go to shooting spot
-                .addPath(new BezierLine(middleArtifactCollect, shootingSpot))
-                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.3)
-
-                // shooting artifacts
-                .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(0, () -> gateControl(0.1))
-                .addParametricCallback(1, this::intakeTransferOn)
-                .addParametricCallback(1, () -> haltThyBot(1500))
-                .addParametricCallback(1, this::intakeTransferOff)
-
+        endOfAuto = follower1.pathBuilder()
                 .addPath(new BezierLine(shootingSpot, endPose))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
-
-
                 .build();
+    }
+
+    public void nextState(int newState) {
+        pathState = newState;
+        timer.reset();
     }
 
 
     @Override
     public void loop() {
+
         // Update Follower
         follower1.update();
-        Constants.FCDPose = follower.getPose();
 
         // Autonomous Path
         switch (pathState) {
             case 0:
-                shooter.setPower(0.7);
                 follower1.followPath(initialShot, true);
+                shooter.setPower(0.6);
                 pathState = 1;
                 break;
             case 1:
                 if (!follower1.isBusy()) {
-                    follower1.followPath(closeArtifacts, true);
-                    pathState = 2;
+                    intake.setPower(0.9);
+                    transfer.setPower(1);
+                    backTransfer.setPower(1);
+                    gate.setPosition(.43);
+                    nextState(2);    // <-- THIS resets timer
                 }
                 break;
             case 2:
-                if (!follower1.isBusy()) {
-                    follower1.followPath(middleArtifacts, true);
-                    pathState = 3;
+                if (timer.seconds() > 3) {
+                    shooter.setPower(0);   // stop shooter
+                    follower1.followPath(closeArtifacts, true);
+                    nextState(3);
                 }
                 break;
             case 3:
                 if (!follower1.isBusy()) {
+                    follower1.followPath(closeArtifacts2, true);
+                    shooter.setPower(0.6);
+                    intake.setPower(0.9);
+                    transfer.setPower(1);
+                    backTransfer.setPower(1);
+                    gate.setPosition(.25);
+                    nextState(4);
+                }
+                break;
+            case 4:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(closeArtifacts3, true);
+                    gate.setPosition(.43);
+                    nextState(5);
+                }
+                break;
+            case 5:
+                if (timer.seconds() > 3) {
                     shooter.setPower(0);
                     intake.setPower(0);
                     transfer.setPower(0);
-                    pathState = 4;
+                    backTransfer.setPower(0);
+                    gate.setPosition(.25);
+                    follower1.followPath(middleArtifacts, true);
+                    nextState(6);
+                }
+                break;
+            case 6:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(middleArtifacts2, true);
+                    shooter.setPower(0.6);
+                    intake.setPower(0.9);
+                    transfer.setPower(1);
+                    backTransfer.setPower(1);
+                    gate.setPosition(.25);
+                    nextState(7);
+                }
+                break;
+            case 7:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(middleArtifacts3, true);
+                    gate.setPosition(.43);
+                    nextState(8);
+                }
+                break;
+            case 8:
+                if (timer.seconds() > 3) {
+                    shooter.setPower(0);
+                    intake.setPower(0);
+                    transfer.setPower(0);
+                    backTransfer.setPower(0);
+                    gate.setPosition(.25);
+                    follower1.followPath(endOfAuto, true);
+                    nextState(9);
+                }
+                break;
+            case 9:
+                if (!follower1.isBusy()) {
+                    nextState(10);
                 }
                 break;
         }
@@ -175,32 +215,8 @@ public class RED_BackZone_IntakeShoot extends OpMode {
         telemetry.addData("x", follower1.getPose().getX());
         telemetry.addData("y", follower1.getPose().getY());
         telemetry.addData("heading", follower1.getPose().getHeading());
+        telemetry.addData("State", pathState);
+        telemetry.addData("Timer", timer.seconds());
         telemetry.update();
-
-    }
-
-    // Runnables
-    private Runnable gateControl(double position) {
-        gate.setPosition(position);
-        return null;
-    }
-
-    private Runnable intakeTransferOn() {
-        intake.setPower(0.9);
-        transfer.setPower(1);
-        return null;
-    }
-
-    private Runnable intakeTransferOff() {
-        intake.setPower(0);
-        transfer.setPower(0);
-        return null;
-    }
-
-    private Runnable haltThyBot(int tiempo) {
-        follower1.pausePathFollowing();
-        sleep(tiempo);
-        follower1.resumePathFollowing();
-        return null;
     }
 }

@@ -77,7 +77,7 @@ public class FieldCentricDriveMAIN extends OpMode {
         aim = hardwareMap.get(Servo.class, "aim");
         aim.setPosition(1);
         gate = hardwareMap.get(Servo.class, "gate");
-        gate.setPosition(0.32);
+        gate.setPosition(0.25); //0.32 is old close, new gate close is 0.25 , new gate open is 0.43, old gate open is 0.1
 
         // --- Intake/Transfer ---
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -120,9 +120,9 @@ public class FieldCentricDriveMAIN extends OpMode {
 
 
         // --- INPUTS ---
-        double drive = gamepad1.left_stick_y;
-        double strafe = gamepad1.left_stick_x;
-        double rotate = gamepad1.right_stick_x;
+        double drive = -gamepad1.left_stick_y;
+        double strafe = -gamepad1.left_stick_x;
+        double rotate = -gamepad1.right_stick_x;
 
         // Switching between field centric and robot centric
         boolean yIsPressed = gamepad1.y;
@@ -141,6 +141,7 @@ public class FieldCentricDriveMAIN extends OpMode {
             // TURNING OFF INTAKE!
             intake.setPower(0);
             transfer.setPower(0);
+            backTransfer.setPower(0);
 
             // A. AUTO-ALIGN ROTATION
             double tx = result.getTx();
@@ -175,16 +176,19 @@ public class FieldCentricDriveMAIN extends OpMode {
 
             // SHOOTING SEQUENCE
             if (shooter.getVelocity() >= (targetVelocity - 100) && shooter.getVelocity() <= (targetVelocity + 100)) {
-                gate.setPosition(0.1);
+                gate.setPosition(0.43);
                 intake.setPower(.75);
                 transfer.setPower(1);
+                backTransfer.setPower(1);
             }
 
 
         } else {
             shooter.setPower(0); // Turn off motor
             aim.setPosition(1);
-            gate.setPosition(0.32);
+            gate.setPosition(0.25);
+            backTransfer.setPower(0);
+            intake.setPower(.75);
         }
 
 
@@ -193,23 +197,21 @@ public class FieldCentricDriveMAIN extends OpMode {
         if (gamepad1.bWasPressed()) { // Manual shooter shutdown
             shooter.setVelocity(0);
             aim.setPosition(1);
-            gate.setPosition(0.32);
+            gate.setPosition(0.25);
         }
 
         if (gamepad1.aWasPressed()) { // Intake on
             intake.setPower(.75);
             transfer.setPower(1);
-            backTransfer.setPower(1);
         }
 
         if (gamepad1.xWasPressed()) { // Intake off
             intake.setPower(0);
             transfer.setPower(0);
-            backTransfer.setPower(0);
         }
 
         if (gamepad1.dpad_left) { // Manaul override for gate to open
-            gate.setPosition(0.1);
+            gate.setPosition(0.43);
         }
 
 
