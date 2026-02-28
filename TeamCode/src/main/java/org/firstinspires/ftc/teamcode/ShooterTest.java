@@ -119,7 +119,7 @@ public class ShooterTest extends OpMode {
 
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
-        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("Heading", follower.getPose().getHeading());
 
 
         // --- INPUTS ---

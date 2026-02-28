@@ -28,8 +28,8 @@ public class BLUE_BACK_Shoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1000;
-    private double setAim = 1.0;
+    private int shooterVelocity = 1400;
+    private double setAim = 0.5;
     private double intakeOn = 0.75;
     private double transferOn = 1.0;
 

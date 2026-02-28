@@ -28,8 +28,8 @@ public class RED_BACK_IntakeShoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1000;
-    private double setAim = 1.0;
+    private int shooterVelocity = 1400;
+    private double setAim = 0.5;
     private double intakeOn = 0.75;
     private double transferOn = 1.0;
 
@@ -183,13 +183,13 @@ public class RED_BACK_IntakeShoot extends OpMode {
                 }
                 break;
             case 5:
-                if (timer.seconds() > 2 && !follower1.isBusy()) {
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     nextState(6);
                 }
                 break;
             case 6:
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 3) {
                     shooter.setVelocity(0);
                     gate.setPosition(gateClose);
                     follower1.followPath(middleArtifactsStart, true);
@@ -215,7 +215,7 @@ public class RED_BACK_IntakeShoot extends OpMode {
                     nextState(10);
                 }
             case 10:
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 4) {
                     shooter.setVelocity(0);
                     gate.setPosition(gateClose);
                     intake.setPower(0);
