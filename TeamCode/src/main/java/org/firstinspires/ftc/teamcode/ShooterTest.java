@@ -21,8 +21,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
-@TeleOp(name="MAIN_FCD", group="Robot")
-public class FieldCentricDriveMAIN extends OpMode {
+@TeleOp(name="ShooterTest", group="Robot")
+public class ShooterTest extends OpMode {
     // --- HARDWARE ---
     private Follower follower;
     private Limelight3A limelight;
@@ -71,7 +71,7 @@ public class FieldCentricDriveMAIN extends OpMode {
         // I = Integral (How much it corrects for long-term errors)
         // D = Derivative (How much it prevents overshooting)
         // F = Feedforward (The "base" power needed for this speed)(If current velocity is too higher then target velocity and maintain it, reduce, vice versa)
-        shooter.setVelocityPIDFCoefficients(15.0, 0.1, 0.0, 13.0); // P=10/11, I=0.1, D=0, F=13
+        shooter.setVelocityPIDFCoefficients(160.0, 0.2, 18.0, 14.2); // P=10/11, I=0.1, D=0, F=13
 
         // --- Servos ---
         aim = hardwareMap.get(Servo.class, "aim");
@@ -82,10 +82,13 @@ public class FieldCentricDriveMAIN extends OpMode {
         // --- Intake/Transfer ---
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(REVERSE);
+        intake.setPower(0);
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
+        transfer.setPower(0);
         backTransfer = hardwareMap.get(DcMotorEx.class, "backTransfer");
         backTransfer.setDirection(REVERSE);
+        backTransfer.setPower(0);
 
         // --- Sensors ---
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -136,63 +139,6 @@ public class FieldCentricDriveMAIN extends OpMode {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
 
-        // --- LOGIC ---
-        if (gamepad1.right_trigger > 0.1 && result != null && result.isValid()) {
-            // TURNING OFF INTAKE!
-            intake.setPower(0);
-            transfer.setPower(0);
-            backTransfer.setPower(0);
-
-            // A. AUTO-ALIGN ROTATION
-            double tx = result.getTx();
-            rotate = -tx * kP_AIM;
-            if (Math.abs(tx) > 0.5 && Math.abs(rotate) < MIN_AIM_POWER) {
-                rotate = Math.signum(rotate) * MIN_AIM_POWER;
-            }
-
-            // B. UPDATE SHOOTER (The Equations)
-            // CALCULATE DISTANCE (Using your existing area-based method)
-            double distance = getDistanceFromTage(result.getTa());
-            //double distance = botPoseDistance();
-
-            // EQUATIONS
-            targetVelocity = ((0.0008702083 * distance) + 0.3177145) * MAX_TICKS_PER_SECOND;
-            double targetAimPos = 0.4398292 + (0.002132784 * distance) - (0.000006403082 * Math.pow(distance, 2));
-
-            // SAFETY: Clip the values to make sure they stay within safe values
-            currentTargetAim = Range.clip(targetAimPos, 0.3, 1.0);
-
-            // C. APPLY TO HARDWARE
-            aim.setPosition(currentTargetAim);
-            shooter.setVelocity(targetVelocity);
-
-            // D. FINE-TUNE MOVEMENT (Slow down as robot gets closer)
-            // If distance is 10, speed is 30%. If distance is 60, speed is 100%.
-            double speedMultiplier = Range.scale(distance, 10, 60, 0.3, 1.0);
-            drive *= speedMultiplier;
-            strafe *= speedMultiplier;
-
-
-
-            // SHOOTING SEQUENCE
-            if (shooter.getVelocity() >= (targetVelocity - 100) && shooter.getVelocity() <= (targetVelocity + 100)) {
-                gate.setPosition(0.43);
-                intake.setPower(.75);
-                transfer.setPower(1);
-                backTransfer.setPower(1);
-            }
-
-
-        } else {
-            shooter.setPower(0); // Turn off motor
-            aim.setPosition(1);
-            gate.setPosition(0.25);
-            backTransfer.setPower(0);
-            intake.setPower(.75);
-        }
-
-
-
         // --- MANUAL OVERRIDES
         if (gamepad1.bWasPressed()) { // Manual shooter shutdown
             shooter.setVelocity(0);
@@ -208,10 +154,22 @@ public class FieldCentricDriveMAIN extends OpMode {
         if (gamepad1.xWasPressed()) { // Intake off
             intake.setPower(0);
             transfer.setPower(0);
+            backTransfer.setPower(0);
         }
 
         if (gamepad1.dpad_left) { // Manaul override for gate to open
             gate.setPosition(0.43);
+        }
+
+        // THIS IS WHERE TO CHANGE VALUES TO MAKE EQUATIONS FOR SHOOTER!!!!
+
+        if (gamepad1.yWasPressed()) {
+            gate.setPosition(0.43);
+            shooter.setVelocity(1450);
+            aim.setPosition(0.45);
+            intake.setPower(0.75);
+            transfer.setPower(1);
+            backTransfer.setPower(1);
         }
 
 

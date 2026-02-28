@@ -6,10 +6,8 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,20 +17,19 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
-@Disabled
-@TeleOp(name="FCD_forTesting", group="Robot")
-public class FieldCentricDrive extends OpMode {
+
+@TeleOp(name="MAIN_FCD", group="Robot")
+public class MAIN_FCD extends OpMode {
     // --- HARDWARE ---
     private Follower follower;
     private Limelight3A limelight;
     private IMU imu;
     public DcMotorEx shooter;
-    public DcMotor intake, transfer;
+    public DcMotor intake, transfer, backTransfer;
     public Servo aim, gate;
 
     // --- TUNING CONSTANTS ---
@@ -61,6 +58,7 @@ public class FieldCentricDrive extends OpMode {
         follower.update();
         follower.setStartingPose(Constants.FCDPose);
 
+
         // --- Shooter Initialization (CRITICAL SECTION) ---
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(FORWARD);
@@ -74,19 +72,24 @@ public class FieldCentricDrive extends OpMode {
         // I = Integral (How much it corrects for long-term errors)
         // D = Derivative (How much it prevents overshooting)
         // F = Feedforward (The "base" power needed for this speed)(If current velocity is too higher then target velocity and maintain it, reduce, vice versa)
-        shooter.setVelocityPIDFCoefficients(15.0, 0.1, 0.0, 13.0); // P=10/11, I=0.1, D=0, F=13
+        shooter.setVelocityPIDFCoefficients(160.0, 0.2, 18.0, 14.2);
 
         // --- Servos ---
         aim = hardwareMap.get(Servo.class, "aim");
         aim.setPosition(1);
         gate = hardwareMap.get(Servo.class, "gate");
-        gate.setPosition(0.32);
+        gate.setPosition(0.25); //0.32 is old close, new gate close is 0.25 , new gate open is 0.43, old gate open is 0.1
 
         // --- Intake/Transfer ---
         intake = hardwareMap.get(DcMotor.class, "intake");
         intake.setDirection(REVERSE);
+        intake.setPower(0);
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
+        transfer.setPower(0);
+        backTransfer = hardwareMap.get(DcMotorEx.class, "backTransfer");
+        backTransfer.setDirection(REVERSE);
+        backTransfer.setPower(0);
 
         // --- Sensors ---
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -96,7 +99,7 @@ public class FieldCentricDrive extends OpMode {
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
-        imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
+        imu.initialize(new IMU.Parameters(revHubOrientationOnRobot) );
 
         telemetry.setMsTransmissionInterval(11);
     }
@@ -114,6 +117,11 @@ public class FieldCentricDrive extends OpMode {
     public void loop() {
         //Call this once per loop
         follower.update();
+
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", follower.getPose().getHeading());
+
 
         // --- INPUTS ---
         double drive = -gamepad1.left_stick_y;
@@ -137,6 +145,7 @@ public class FieldCentricDrive extends OpMode {
             // TURNING OFF INTAKE!
             intake.setPower(0);
             transfer.setPower(0);
+            backTransfer.setPower(0);
 
             // A. AUTO-ALIGN ROTATION
             double tx = result.getTx();
@@ -151,8 +160,8 @@ public class FieldCentricDrive extends OpMode {
             //double distance = botPoseDistance();
 
             // EQUATIONS
-            targetVelocity = ((0.0008702083 * distance) + 0.3177145) * MAX_TICKS_PER_SECOND;
-            double targetAimPos = 0.4398292 + (0.002132784 * distance) - (0.000006403082 * Math.pow(distance, 2));
+            targetVelocity = 848.2994 + (1.463862 * distance) + (0.000463958 * Math.pow(distance, 2)) * MAX_TICKS_PER_SECOND;
+            double targetAimPos = 1.259048 - (0.002790138 * distance) + (0.000001723779 * Math.pow(distance, 2));
 
             // SAFETY: Clip the values to make sure they stay within safe values
             currentTargetAim = Range.clip(targetAimPos, 0.3, 1.0);
@@ -168,19 +177,24 @@ public class FieldCentricDrive extends OpMode {
             strafe *= speedMultiplier;
 
 
-
+            double velocity = shooter.getVelocity();
+            double recoveryThreshold = targetVelocity * 0.95;
             // SHOOTING SEQUENCE
-            if (shooter.getVelocity() >= (targetVelocity - 100) && shooter.getVelocity() <= (targetVelocity + 100)) {
-                gate.setPosition(0.1);
-                intake.setPower(.75);
+            if (velocity >= recoveryThreshold) {
+                gate.setPosition(0.43);
+                intake.setPower(0.75);
                 transfer.setPower(1);
+                backTransfer.setPower(1);
             }
 
 
         } else {
             shooter.setPower(0); // Turn off motor
             aim.setPosition(1);
-            gate.setPosition(0.32);
+            gate.setPosition(0.25);
+            backTransfer.setPower(0);
+            intake.setPower(0.75);
+            transfer.setPower(0.75);
         }
 
 
@@ -189,9 +203,8 @@ public class FieldCentricDrive extends OpMode {
         if (gamepad1.bWasPressed()) { // Manual shooter shutdown
             shooter.setVelocity(0);
             aim.setPosition(1);
-            gate.setPosition(0.32);
+            gate.setPosition(0.25);
         }
-
 
         if (gamepad1.aWasPressed()) { // Intake on
             intake.setPower(.75);
@@ -204,7 +217,7 @@ public class FieldCentricDrive extends OpMode {
         }
 
         if (gamepad1.dpad_left) { // Manaul override for gate to open
-            gate.setPosition(0.1);
+            gate.setPosition(0.43);
         }
 
 

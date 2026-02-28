@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 // Imports
-
-import static android.os.SystemClock.sleep;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
@@ -19,42 +17,59 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "BLUE_BackZone_ShootONLY", group = "Robot")
-public class BLUE_BackZone_ShootONLY extends OpMode {
-
+@Autonomous(name = "RED_TOP_Shoot", group = "Robot")
+public class RED_TOP_Shoot extends OpMode {
     // Variables
     public Follower follower1;
     public DcMotorEx shooter;
     public DcMotor intake, transfer, backTransfer;
     public Servo aim;
     public Servo gate;
-    public Servo pusher;
+
+    private double gateOpen = 0.43;
+    private double gateClose = 0.25;
+    private int shooterVelocity = 1000;
+    private double setAim = 1.0;
+    private double intakeOn = 0.75;
+    private double transferOn = 1.0;
 
     private int pathState;
     private ElapsedTime timer = new ElapsedTime();
 
     // Poses
-    private final Pose startPose = new Pose(57.5, 9, Math.toRadians(90));
-    private final Pose shootingSpot = new Pose(57.5, 12, Math.toRadians(120));
-    private final Pose endPose = new Pose(57.5, 36, Math.toRadians(90));
-    // PathChains
-    private PathChain initialShot, endOfAuto;
+    private final Pose startPose = new Pose(125.5, 123.5, Math.toRadians(130));
+    private final Pose shootingSpot = new Pose(96, 96, Math.toRadians(45));
+    private final Pose endPose = new Pose(96, 60, Math.toRadians(90));
 
+    // PathChains
+    private PathChain initialShot,
+            endOfAuto;
 
     @Override
     public void init() {
         // Follower Configs
         follower1 = Constants.createFollower(hardwareMap);
         follower1.setStartingPose(startPose);
-        follower1.setMaxPower(0.67);
+        follower1.setMaxPower(1);
 
         // Shooter Configs
         shooter = hardwareMap.get(DcMotorEx.class, "shooter");
         shooter.setDirection(FORWARD);
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // Reset encoder once to clear old data
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // Turn on the internal Velocity PID mode
+
+        // *** PIDF TUNING ***
+
+        // Access the internal PIDF coefficients
+        // P = Proportional (How hard it tries to reach the speed)(If motor is taking too long to get to target value, increase, vice versa)
+        // I = Integral (How much it corrects for long-term errors)
+        // D = Derivative (How much it prevents overshooting)
+        // F = Feedforward (The "base" power needed for this speed)(If current velocity is too higher then target velocity and maintain it, reduce, vice versa)
+        shooter.setVelocityPIDFCoefficients(160.0, 0.2, 18.0, 14.2);
+
 
         aim = hardwareMap.get(Servo.class, "aim");
-        aim.setPosition(1); // 1=high arc 0=low arc
+        aim.setPosition(setAim); // 1=high arc 0=low arc
 
         // Intake Configs
         intake = hardwareMap.get(DcMotor.class, "intake");
@@ -62,10 +77,11 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
 
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
+        backTransfer = hardwareMap.get(DcMotorEx.class, "backTransfer");
+        backTransfer.setDirection(REVERSE);
 
         gate = hardwareMap.get(Servo.class, "gate");
-        gate.setPosition(.25); //0.32 is old close, new gate close is 0.25 , new gate open is 0.43, old gate open is 0.1
-
+        gate.setPosition(.25);
 
 
         // Paths
@@ -80,49 +96,46 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
                 .build();
     }
 
-
     public void nextState(int newState) {
         pathState = newState;
         timer.reset();
     }
-
 
     @Override
     public void loop() {
         // Update Follower
         follower1.update();
 
-
         // Autonomous Path
         switch (pathState) {
             case 0:
                 follower1.followPath(initialShot, true);
-                shooter.setPower(0.6);
-                pathState = 1;
+                shooter.setVelocity(shooterVelocity);
+                nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
-                if (!follower1.isBusy()) {
-                    intake.setPower(0.9);
-                    transfer.setPower(1);
-                    backTransfer.setPower(1);
-                    gate.setPosition(.43);
-                    nextState(2);    // <-- THIS resets timer
+                if (timer.seconds() > 2 && !follower1.isBusy()) {
+                    gate.setPosition(gateOpen);
+                    intake.setPower(intakeOn);
+                    transfer.setPower(transferOn);
+                    backTransfer.setPower(transferOn);
+                    nextState(2);
                 }
                 break;
-            case 8:
-                if (timer.seconds() > 3) {
-                    shooter.setPower(0);
+            case 2:
+                if (timer.seconds() > 2) {
+                    shooter.setVelocity(0);
+                    gate.setPosition(gateClose);
                     intake.setPower(0);
                     transfer.setPower(0);
                     backTransfer.setPower(0);
-                    gate.setPosition(.25);
                     follower1.followPath(endOfAuto, true);
-                    nextState(9);
+                    nextState(3);
                 }
                 break;
-            case 9:
+            case 3:
                 if (!follower1.isBusy()) {
-                    nextState(10);
+                    nextState(4);
                 }
                 break;
         }
@@ -130,8 +143,8 @@ public class BLUE_BackZone_ShootONLY extends OpMode {
         telemetry.addData("x", follower1.getPose().getX());
         telemetry.addData("y", follower1.getPose().getY());
         telemetry.addData("heading", follower1.getPose().getHeading());
+        telemetry.addData("State", pathState);
+        telemetry.addData("Timer", timer.seconds());
         telemetry.update();
-
     }
-
 }
