@@ -160,7 +160,7 @@ public class MAIN_FCD extends OpMode {
             //double distance = botPoseDistance();
 
             // EQUATIONS
-            targetVelocity = 848.2994 + (1.463862 * distance) + (0.000463958 * Math.pow(distance, 2)) * MAX_TICKS_PER_SECOND;
+            targetVelocity = 848.2994 + (1.463862 * distance) + (0.000463958 * Math.pow(distance, 2));
             double targetAimPos = 1.259048 - (0.002790138 * distance) + (0.000001723779 * Math.pow(distance, 2));
 
             // SAFETY: Clip the values to make sure they stay within safe values
@@ -176,7 +176,7 @@ public class MAIN_FCD extends OpMode {
             drive *= speedMultiplier;
             strafe *= speedMultiplier;
 
-
+            //double error = Math.abs(shooter.getVelocity() - targetVelocity);
             double velocity = shooter.getVelocity();
             double recoveryThreshold = targetVelocity * 0.95;
             // SHOOTING SEQUENCE

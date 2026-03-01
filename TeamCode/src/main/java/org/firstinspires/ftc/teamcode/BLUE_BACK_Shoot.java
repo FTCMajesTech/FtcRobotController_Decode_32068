@@ -28,7 +28,7 @@ public class BLUE_BACK_Shoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1400;
+    private int shooterVelocity = 1550;
     private double setAim = 0.5;
     private double intakeOn = 0.75;
     private double transferOn = 1.0;
@@ -38,8 +38,8 @@ public class BLUE_BACK_Shoot extends OpMode {
 
     // Poses
     private final Pose startPose = new Pose(57.5, 9, Math.toRadians(90));
-    private final Pose shootingSpot = new Pose(57.5, 12, Math.toRadians(120));
-    private final Pose endPose = new Pose(57.5, 36, Math.toRadians(90));
+    private final Pose shootingSpot = new Pose(57.5, 12, Math.toRadians(115));
+    private final Pose endPose = new Pose(30, 12, Math.toRadians(180));
 
     // PathChains
     private PathChain initialShot,
@@ -92,7 +92,7 @@ public class BLUE_BACK_Shoot extends OpMode {
                 .build();
         endOfAuto = follower1.pathBuilder()
                 .addPath(new BezierLine(shootingSpot, endPose))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.5)
                 .build();
     }
 
@@ -114,7 +114,7 @@ public class BLUE_BACK_Shoot extends OpMode {
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
-                if (timer.seconds() > 2 && !follower1.isBusy()) {
+                if (timer.seconds() > 4 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     intake.setPower(intakeOn);
                     transfer.setPower(transferOn);
@@ -123,7 +123,7 @@ public class BLUE_BACK_Shoot extends OpMode {
                 }
                 break;
             case 2:
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 3) {
                     shooter.setVelocity(0);
                     gate.setPosition(gateClose);
                     intake.setPower(0);

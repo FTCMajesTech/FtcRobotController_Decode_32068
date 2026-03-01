@@ -39,7 +39,7 @@ public class BLUE_TOP_Shoot extends OpMode {
     // Poses
     private final Pose startPose = new Pose(15, 123.5, Math.toRadians(50));
     private final Pose shootingSpot = new Pose(48, 96, Math.toRadians(135));
-    private final Pose endPose = new Pose(48, 60, Math.toRadians(90));
+    private final Pose endPose = new Pose(48, 125, Math.toRadians(180));
 
     // PathChains
     private PathChain initialShot,
@@ -92,7 +92,7 @@ public class BLUE_TOP_Shoot extends OpMode {
                 .build();
         endOfAuto = follower1.pathBuilder()
                 .addPath(new BezierLine(shootingSpot, endPose))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.5)
                 .build();
     }
 

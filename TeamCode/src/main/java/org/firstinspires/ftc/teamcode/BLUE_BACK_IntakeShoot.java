@@ -28,7 +28,7 @@ public class BLUE_BACK_IntakeShoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1400;
+    private int shooterVelocity = 1550;
     private double setAim = 0.5;
     private double intakeOn = 0.75;
     private double transferOn = 1.0;
@@ -38,12 +38,12 @@ public class BLUE_BACK_IntakeShoot extends OpMode {
 
     // Poses
     private final Pose startPose = new Pose(57.5, 9, Math.toRadians(90));
-    private final Pose shootingSpot = new Pose(57.5, 12, Math.toRadians(120));
+    private final Pose shootingSpot = new Pose(57.5, 12, Math.toRadians(115));
     private final Pose closeArtifactStart = new Pose(57.5, 36, Math.toRadians(180));
-    private final Pose closeArtifactCollect = new Pose(20, 36, Math.toRadians(180));
+    private final Pose closeArtifactCollect = new Pose(15, 36, Math.toRadians(180));
     private final Pose middleArtifactStart = new Pose(57.5, 60, Math.toRadians(180));
-    private final Pose middleArtifactCollect = new Pose(20, 60, Math.toRadians(180));
-    private final Pose endPose = new Pose(57.5, 36, Math.toRadians(90));
+    private final Pose middleArtifactCollect = new Pose(15, 60, Math.toRadians(180));
+    private final Pose endPose = new Pose(57.5, 36, Math.toRadians(180));
 
     // PathChains
     private PathChain initialShot,
@@ -103,34 +103,34 @@ public class BLUE_BACK_IntakeShoot extends OpMode {
         closeArtifactsStart = follower1.pathBuilder()
                 // go from first shot to collect first row of artifacts
                 .addPath(new BezierLine(shootingSpot, closeArtifactStart))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.5)
                 .build();
         closeArtifactsCollect = follower1.pathBuilder()
                 .addPath(new BezierLine(closeArtifactStart,closeArtifactCollect))
-                .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.5)
                 .build();
         closeArtifactsShoot = follower1.pathBuilder()
                 .addPath(new BezierLine(closeArtifactCollect,shootingSpot))
-                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.5)
                 .build();
 
         middleArtifactsStart = follower1.pathBuilder()
                 //second shot to middle artifacts
                 .addPath(new BezierLine(shootingSpot, middleArtifactStart))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.5)
                 .build();
         middleArtifactsCollect = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
-                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.5)
                 .build();
         middleArtifactsShoot = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactCollect,shootingSpot))
-                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.5)
                 .build();
 
         endOfAuto = follower1.pathBuilder()
                 .addPath(new BezierLine(shootingSpot, endPose))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.5)
                 .build();
     }
 
@@ -153,7 +153,7 @@ public class BLUE_BACK_IntakeShoot extends OpMode {
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
-                if (timer.seconds() > 2 && !follower1.isBusy()) {
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     intake.setPower(intakeOn);
                     transfer.setPower(transferOn);
@@ -183,7 +183,7 @@ public class BLUE_BACK_IntakeShoot extends OpMode {
                 }
                 break;
             case 5:
-                if (timer.seconds() > 3 && !follower1.isBusy()) {
+                if (timer.seconds() > 4 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     nextState(6);
                 }
@@ -210,7 +210,7 @@ public class BLUE_BACK_IntakeShoot extends OpMode {
                 }
                 break;
             case 9:
-                if (timer.seconds() > 3 && !follower1.isBusy()) {
+                if (timer.seconds() > 4 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     nextState(10);
                 }

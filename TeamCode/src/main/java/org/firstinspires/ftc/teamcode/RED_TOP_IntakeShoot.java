@@ -40,10 +40,10 @@ public class RED_TOP_IntakeShoot extends OpMode {
     private final Pose startPose = new Pose(125.5, 123.5, Math.toRadians(130));
     private final Pose shootingSpot = new Pose(96, 96, Math.toRadians(45));
     private final Pose closeArtifactStart = new Pose(86.5, 84, Math.toRadians(0));
-    private final Pose closeArtifactCollect = new Pose(124, 84, Math.toRadians(0));
+    private final Pose closeArtifactCollect = new Pose(129, 84, Math.toRadians(0));
     private final Pose middleArtifactStart = new Pose(86.5, 60, Math.toRadians(0));
-    private final Pose middleArtifactCollect = new Pose(124, 60, Math.toRadians(0));
-    private final Pose endPose = new Pose(96, 125, Math.toRadians(90));
+    private final Pose middleArtifactCollect = new Pose(129, 60, Math.toRadians(0));
+    private final Pose endPose = new Pose(96, 125, Math.toRadians(0));
 
     // PathChains
     private PathChain initialShot,
@@ -117,20 +117,20 @@ public class RED_TOP_IntakeShoot extends OpMode {
         middleArtifactsStart = follower1.pathBuilder()
                 //second shot to middle artifacts
                 .addPath(new BezierLine(shootingSpot, middleArtifactStart))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.5)
                 .build();
         middleArtifactsCollect = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
-                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.5)
                 .build();
         middleArtifactsShoot = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactCollect,shootingSpot))
-                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(middleArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.5)
                 .build();
 
         endOfAuto = follower1.pathBuilder()
                 .addPath(new BezierLine(shootingSpot, endPose))
-                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.8)
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.5)
                 .build();
     }
 
@@ -153,7 +153,7 @@ public class RED_TOP_IntakeShoot extends OpMode {
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
-                if (timer.seconds() > 2 && !follower1.isBusy()) {
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     intake.setPower(intakeOn);
                     transfer.setPower(transferOn);
@@ -183,13 +183,13 @@ public class RED_TOP_IntakeShoot extends OpMode {
                 }
                 break;
             case 5:
-                if (timer.seconds() > 2 && !follower1.isBusy()) {
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     nextState(6);
                 }
                 break;
             case 6:
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 3) {
                     shooter.setVelocity(0);
                     gate.setPosition(gateClose);
                     follower1.followPath(middleArtifactsStart, true);
@@ -215,7 +215,7 @@ public class RED_TOP_IntakeShoot extends OpMode {
                     nextState(10);
                 }
             case 10:
-                if (timer.seconds() > 2) {
+                if (timer.seconds() > 4) {
                     shooter.setVelocity(0);
                     gate.setPosition(gateClose);
                     intake.setPower(0);
