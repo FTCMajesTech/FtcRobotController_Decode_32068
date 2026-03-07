@@ -81,7 +81,7 @@ public class ShooterTest extends OpMode {
 
         // --- Intake/Transfer ---
         intake = hardwareMap.get(DcMotor.class, "intake");
-        intake.setDirection(REVERSE);
+        intake.setDirection(FORWARD);
         intake.setPower(0);
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);

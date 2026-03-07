@@ -74,7 +74,7 @@ public class RED_BACK_Shoot extends OpMode {
 
         // Intake Configs
         intake = hardwareMap.get(DcMotor.class, "intake");
-        intake.setDirection(REVERSE);
+        intake.setDirection(FORWARD);
 
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);

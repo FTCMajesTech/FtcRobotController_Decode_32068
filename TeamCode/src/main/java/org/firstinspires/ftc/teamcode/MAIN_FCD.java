@@ -82,7 +82,7 @@ public class MAIN_FCD extends OpMode {
 
         // --- Intake/Transfer ---
         intake = hardwareMap.get(DcMotor.class, "intake");
-        intake.setDirection(REVERSE);
+        intake.setDirection(FORWARD);
         intake.setPower(0);
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
@@ -129,11 +129,11 @@ public class MAIN_FCD extends OpMode {
         double rotate = -gamepad1.right_stick_x;
 
         // Switching between field centric and robot centric
-        boolean yIsPressed = gamepad1.y;
-        if (yIsPressed && !yPressedLastIteration) {
-            centric = !centric; // Need to fix issue of initialize messing up field centric
-        }
-        yPressedLastIteration = yIsPressed;
+        //boolean yIsPressed = gamepad1.y;
+        //if (yIsPressed && !yPressedLastIteration) {
+            //centric = !centric; // Need to fix issue of initialize messing up field centric
+        //}
+        //yPressedLastIteration = yIsPressed;
 
         // --- SENSOR DATA ---
         LLResult result = limelight.getLatestResult();
@@ -200,23 +200,33 @@ public class MAIN_FCD extends OpMode {
 
 
         // --- MANUAL OVERRIDES
-        if (gamepad1.bWasPressed()) { // Manual shooter shutdown
+        if (gamepad1.yWasPressed()) { // Manual shooter shutdown
             shooter.setVelocity(0);
             aim.setPosition(1);
             gate.setPosition(0.25);
         }
 
         if (gamepad1.aWasPressed()) { // Intake on
+            intake.setDirection(FORWARD);
+            transfer.setDirection(FORWARD);
             intake.setPower(.75);
             transfer.setPower(1);
         }
 
         if (gamepad1.xWasPressed()) { // Intake off
+            intake.setDirection(FORWARD);
+            transfer.setDirection(FORWARD);
             intake.setPower(0);
             transfer.setPower(0);
         }
+        if (gamepad1.bWasPressed()) { // Outtake
+            intake.setDirection(REVERSE);
+            transfer.setDirection(REVERSE);
+            intake.setPower(.75);
+            transfer.setPower(1);
+        }
 
-        if (gamepad1.dpad_left) { // Manaul override for gate to open
+        if (gamepad1.dpad_right) { // Manaul override for gate to open
             gate.setPosition(0.43);
         }
 

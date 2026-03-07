@@ -84,7 +84,7 @@ public class FieldCentricDrive extends OpMode {
 
         // --- Intake/Transfer ---
         intake = hardwareMap.get(DcMotor.class, "intake");
-        intake.setDirection(REVERSE);
+        intake.setDirection(FORWARD);
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         transfer.setDirection(FORWARD);
 
