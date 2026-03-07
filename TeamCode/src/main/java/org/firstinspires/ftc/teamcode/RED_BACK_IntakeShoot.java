@@ -28,10 +28,10 @@ public class RED_BACK_IntakeShoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1550;
-    private double setAim = 0.5;
+    private int shooterVelocity = 1408;
+    private double setAim = 0.502;
     private double intakeOn = 0.75;
-    private double transferOn = 1.0;
+    private double transferOn = 0.75;
 
     private int pathState;
     private ElapsedTime timer = new ElapsedTime();

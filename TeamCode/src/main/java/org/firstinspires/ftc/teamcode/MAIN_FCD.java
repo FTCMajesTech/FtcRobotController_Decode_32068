@@ -129,11 +129,11 @@ public class MAIN_FCD extends OpMode {
         double rotate = -gamepad1.right_stick_x;
 
         // Switching between field centric and robot centric
-        //boolean yIsPressed = gamepad1.y;
-        //if (yIsPressed && !yPressedLastIteration) {
-            //centric = !centric; // Need to fix issue of initialize messing up field centric
-        //}
-        //yPressedLastIteration = yIsPressed;
+        boolean yIsPressed = gamepad1.y;
+        if (yIsPressed && !yPressedLastIteration) {
+            centric = !centric; // Need to fix issue of initialize messing up field centric
+        }
+        yPressedLastIteration = yIsPressed;
 
         // --- SENSOR DATA ---
         LLResult result = limelight.getLatestResult();
@@ -186,16 +186,24 @@ public class MAIN_FCD extends OpMode {
                 transfer.setPower(1);
                 backTransfer.setPower(1);
             }
-
-
         } else {
-            shooter.setPower(0); // Turn off motor
+            shooter.setVelocity(0); // Turn off motor
             aim.setPosition(1);
             gate.setPosition(0.25);
             backTransfer.setPower(0);
             intake.setPower(0.75);
             transfer.setPower(0.75);
         }
+
+        if (gamepad1.left_trigger > 0.1) {
+            follower.setMaxPower(1.0);
+        } else {
+            follower.setMaxPower(0.85);
+        }
+
+        // --- APPLY DRIVE ---
+        // Single point of truth for movement
+        follower.setTeleOpDrive(drive, strafe, rotate * 0.75, centric);
 
 
 
@@ -214,27 +222,19 @@ public class MAIN_FCD extends OpMode {
         }
 
         if (gamepad1.xWasPressed()) { // Intake off
-            intake.setDirection(FORWARD);
-            transfer.setDirection(FORWARD);
             intake.setPower(0);
             transfer.setPower(0);
         }
         if (gamepad1.bWasPressed()) { // Outtake
             intake.setDirection(REVERSE);
             transfer.setDirection(REVERSE);
-            intake.setPower(.75);
+            intake.setPower(0.75);
             transfer.setPower(1);
         }
 
         if (gamepad1.dpad_right) { // Manaul override for gate to open
             gate.setPosition(0.43);
         }
-
-
-
-        // --- APPLY DRIVE ---
-        // Single point of truth for movement
-        follower.setTeleOpDrive(drive, strafe, rotate, centric);
 
 
 

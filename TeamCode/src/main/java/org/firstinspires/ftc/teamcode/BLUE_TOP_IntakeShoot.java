@@ -28,10 +28,10 @@ public class BLUE_TOP_IntakeShoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1000;
-    private double setAim = 1.0;
+    private int shooterVelocity = 1058;
+    private double setAim = 0.9;
     private double intakeOn = 0.75;
-    private double transferOn = 1.0;
+    private double transferOn = 0.75;
 
     private int pathState;
     private ElapsedTime timer = new ElapsedTime();
@@ -121,7 +121,7 @@ public class BLUE_TOP_IntakeShoot extends OpMode {
                 .build();
         middleArtifactsCollect = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
-                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 0.5)
+                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 1)
                 .build();
         middleArtifactsShoot = follower1.pathBuilder()
                 .addPath(new BezierLine(middleArtifactCollect,shootingSpot))

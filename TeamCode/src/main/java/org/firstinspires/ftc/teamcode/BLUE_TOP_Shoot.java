@@ -28,10 +28,10 @@ public class BLUE_TOP_Shoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1000;
-    private double setAim = 1.0;
+    private int shooterVelocity = 1058;
+    private double setAim = 0.9;
     private double intakeOn = 0.75;
-    private double transferOn = 1.0;
+    private double transferOn = 0.75;
 
     private int pathState;
     private ElapsedTime timer = new ElapsedTime();

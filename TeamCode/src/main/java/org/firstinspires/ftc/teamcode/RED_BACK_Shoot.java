@@ -28,17 +28,17 @@ public class RED_BACK_Shoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1550;
-    private double setAim = 0.5;
+    private int shooterVelocity = 1408;
+    private double setAim = 0.502;
     private double intakeOn = 0.75;
-    private double transferOn = 1.0;
+    private double transferOn = 0.75;
 
     private int pathState;
     private ElapsedTime timer = new ElapsedTime();
 
     // Poses
     private final Pose startPose = new Pose(86.5, 9, Math.toRadians(90));
-    private final Pose shootingSpot = new Pose(86.5, 12, Math.toRadians(70));
+    private final Pose shootingSpot = new Pose(86.5, 12, Math.toRadians(65));
     private final Pose endPose = new Pose(114, 12, Math.toRadians(0));
 
     // PathChains
@@ -115,7 +115,7 @@ public class RED_BACK_Shoot extends OpMode {
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
-                if (timer.seconds() > 4 && !follower1.isBusy()) {
+                if (timer.seconds() > 6 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     intake.setPower(intakeOn);
                     transfer.setPower(transferOn);
