@@ -17,8 +17,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "RED_TOP_Shoot", group = "Robot")
-public class RED_TOP_Shoot extends OpMode {
+@Autonomous(name = "RED_TOP_IntakeShootWOOS", group = "Robot")
+public class RED_TOP_IntakeShootWOS extends OpMode {
     // Variables
     public Follower follower1;
     public DcMotorEx shooter;
@@ -39,10 +39,20 @@ public class RED_TOP_Shoot extends OpMode {
     // Poses
     private final Pose startPose = new Pose(125.5, 123.5, Math.toRadians(130));
     private final Pose shootingSpot = new Pose(96, 96, Math.toRadians(45));
+    private final Pose closeArtifactStart = new Pose(86.5, 84, Math.toRadians(0));
+    private final Pose closeArtifactCollect = new Pose(129, 84, Math.toRadians(0));
+    private final Pose middleArtifactStart = new Pose(86.5, 60, Math.toRadians(0));
+    private final Pose middleArtifactCollect = new Pose(129, 60, Math.toRadians(0));
     private final Pose endPose = new Pose(96, 125, Math.toRadians(0));
 
     // PathChains
     private PathChain initialShot,
+            closeArtifactsStart,
+            closeArtifactsCollect,
+            closeArtifactsShoot,
+            middleArtifactsStart,
+            middleArtifactsCollect,
+            middleArtifactsShoot,
             endOfAuto;
 
     @Override
@@ -83,13 +93,41 @@ public class RED_TOP_Shoot extends OpMode {
         gate = hardwareMap.get(Servo.class, "gate");
         gate.setPosition(.25);
 
-
         // Paths
         initialShot = follower1.pathBuilder()
                 // go to shooting spot and fire the preloaded artifacts
                 .addPath(new BezierLine(startPose, shootingSpot))
                 .setLinearHeadingInterpolation(startPose.getHeading(), shootingSpot.getHeading(), 0.5)
                 .build();
+
+        closeArtifactsStart = follower1.pathBuilder()
+                // go from first shot to collect first row of artifacts
+                .addPath(new BezierLine(shootingSpot, closeArtifactStart))
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), closeArtifactStart.getHeading(), 0.8)
+                .build();
+        closeArtifactsCollect = follower1.pathBuilder()
+                .addPath(new BezierLine(closeArtifactStart,closeArtifactCollect))
+                .setLinearHeadingInterpolation(closeArtifactStart.getHeading(), closeArtifactCollect.getHeading(), 0.8)
+                .build();
+        closeArtifactsShoot = follower1.pathBuilder()
+                .addPath(new BezierLine(closeArtifactCollect,shootingSpot))
+                .setLinearHeadingInterpolation(closeArtifactCollect.getHeading(), shootingSpot.getHeading(), 0.8)
+                .build();
+
+        middleArtifactsStart = follower1.pathBuilder()
+                //second shot to middle artifacts
+                .addPath(new BezierLine(shootingSpot, middleArtifactStart))
+                .setLinearHeadingInterpolation(shootingSpot.getHeading(), middleArtifactStart.getHeading(), 0.5)
+                .build();
+        middleArtifactsCollect = follower1.pathBuilder()
+                .addPath(new BezierLine(middleArtifactStart, middleArtifactCollect))
+                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), middleArtifactCollect.getHeading(), 1)
+                .build();
+        middleArtifactsShoot = follower1.pathBuilder()
+                .addPath(new BezierLine(middleArtifactStart,shootingSpot))
+                .setLinearHeadingInterpolation(middleArtifactStart.getHeading(), shootingSpot.getHeading(), 0.5)
+                .build();
+
         endOfAuto = follower1.pathBuilder()
                 .addPath(new BezierLine(shootingSpot, endPose))
                 .setLinearHeadingInterpolation(shootingSpot.getHeading(), endPose.getHeading(), 0.5)
@@ -103,6 +141,7 @@ public class RED_TOP_Shoot extends OpMode {
 
     @Override
     public void loop() {
+
         // Update Follower
         follower1.update();
 
@@ -114,7 +153,7 @@ public class RED_TOP_Shoot extends OpMode {
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
-                if (timer.seconds() > 4 && !follower1.isBusy()) {
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
                     gate.setPosition(gateOpen);
                     intake.setPower(intakeOn);
                     transfer.setPower(transferOn);
@@ -126,16 +165,69 @@ public class RED_TOP_Shoot extends OpMode {
                 if (timer.seconds() > 2) {
                     shooter.setVelocity(0);
                     gate.setPosition(gateClose);
-                    intake.setPower(0);
-                    transfer.setPower(0);
-                    backTransfer.setPower(0);
-                    follower1.followPath(endOfAuto, true);
+                    follower1.followPath(closeArtifactsStart, true);
                     nextState(3);
                 }
                 break;
             case 3:
                 if (!follower1.isBusy()) {
+                    follower1.followPath(closeArtifactsCollect, true);
+                    shooter.setVelocity(shooterVelocity);
                     nextState(4);
+                }
+                break;
+            case 4:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(closeArtifactsShoot, true);
+                    nextState(5);
+                }
+                break;
+            case 5:
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
+                    gate.setPosition(gateOpen);
+                    nextState(10);
+                }
+                break;
+            /*case 6:
+                if (timer.seconds() > 3) {
+                    shooter.setVelocity(0);
+                    gate.setPosition(gateClose);
+                    follower1.followPath(middleArtifactsStart, true);
+                    nextState(7);
+                }
+                break;
+            case 7:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(middleArtifactsCollect, true);
+                    shooter.setVelocity(shooterVelocity);
+                    nextState(8);
+                }
+                break;
+            case 8:
+                if (!follower1.isBusy()) {
+                    follower1.followPath(middleArtifactsShoot, true);
+                    nextState(9);
+                }
+                break;
+            case 9:
+                if (timer.seconds() > 3 && !follower1.isBusy()) {
+                    gate.setPosition(gateOpen);
+                    nextState(10);
+                }
+            */case 10:
+                if (timer.seconds() > 4) {
+                    shooter.setVelocity(0);
+                    gate.setPosition(gateClose);
+                    intake.setPower(0);
+                    transfer.setPower(0);
+                    backTransfer.setPower(0);
+                    follower1.followPath(endOfAuto, true);
+                    nextState(11);
+                }
+                break;
+            case 11:
+                if (!follower1.isBusy()) {
+                    nextState(12);
                 }
                 break;
         }

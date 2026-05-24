@@ -28,7 +28,7 @@ public class RED_BACK_IntakeShoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1408;
+    private int shooterVelocity = 1410;
     private double setAim = 0.502;
     private double intakeOn = 0.75;
     private double transferOn = 0.75;
@@ -38,11 +38,11 @@ public class RED_BACK_IntakeShoot extends OpMode {
 
     // Poses
     private final Pose startPose = new Pose(86.5, 9, Math.toRadians(90));
-    private final Pose shootingSpot = new Pose(86.5, 12, Math.toRadians(65));
+    private final Pose shootingSpot = new Pose(86.5, 12, Math.toRadians(60));
     private final Pose closeArtifactStart = new Pose(86.5, 34, Math.toRadians(0));
-    private final Pose closeArtifactCollect = new Pose(129, 34, Math.toRadians(0));
+    private final Pose closeArtifactCollect = new Pose(132, 34, Math.toRadians(0));
     private final Pose middleArtifactStart = new Pose(86.5, 58, Math.toRadians(0));
-    private final Pose middleArtifactCollect = new Pose(129, 58, Math.toRadians(0));
+    private final Pose middleArtifactCollect = new Pose(132, 58, Math.toRadians(0));
     private final Pose endPose = new Pose(86.5, 36, Math.toRadians(0));
 
     // PathChains
@@ -148,8 +148,8 @@ public class RED_BACK_IntakeShoot extends OpMode {
         // Autonomous Path
         switch (pathState) {
             case 0:
-                follower1.followPath(initialShot, true);
                 shooter.setVelocity(shooterVelocity);
+                follower1.followPath(initialShot, true);
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
