@@ -28,8 +28,8 @@ public class RED_BACK_IntakeShoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1408;
-    private double setAim = 0.502;
+    private int shooterVelocity = 1407; // 1408, 1308, 1375, 1390, 1395, 1398, 1396, 1397, 1403, 1405
+    private double setAim = 0.390;// 0.502, .450, 0.400, 0.390
     private double intakeOn = 0.75;
     private double transferOn = 0.75;
 
@@ -172,6 +172,8 @@ public class RED_BACK_IntakeShoot extends OpMode {
             case 3:
                 if (!follower1.isBusy()) {
                     follower1.followPath(closeArtifactsCollect, true);
+                    shooterVelocity = 1410; // aaded by Nickel and iyra
+                    setAim = 0.320;// Added by Iyra
                     shooter.setVelocity(shooterVelocity);
                     nextState(4);
                 }
@@ -199,6 +201,7 @@ public class RED_BACK_IntakeShoot extends OpMode {
             case 7:
                 if (!follower1.isBusy()) {
                     follower1.followPath(middleArtifactsCollect, true);
+                    shooterVelocity = 1408; // added by Iyra
                     shooter.setVelocity(shooterVelocity);
                     nextState(8);
                 }
