@@ -28,8 +28,8 @@ public class RED_BACK_Shoot extends OpMode {
 
     private double gateOpen = 0.43;
     private double gateClose = 0.25;
-    private int shooterVelocity = 1408;
-    private double setAim = 0.502;
+    private int shooterVelocity = 1407;// 1408
+    private double setAim = 0.390;// 0.502
     private double intakeOn = 0.75;
     private double transferOn = 0.75;
 
