@@ -109,8 +109,8 @@ public class BLUE_TOP_Shoot extends OpMode {
         // Autonomous Path
         switch (pathState) {
             case 0:
-                follower1.followPath(initialShot, true);
                 shooter.setVelocity(shooterVelocity);
+                follower1.followPath(initialShot, true);
                 nextState(1);   // <-- THIS resets timer
                 break;
             case 1:
